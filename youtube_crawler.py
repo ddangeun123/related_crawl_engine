@@ -47,9 +47,7 @@ class Youtube:
                     "continuationItemRenderer"
                 ]
             except:
-                next_page_info_json = {
-                    
-                }
+                next_page_info_json = {}
 
             # 값 넣어주기
             self.click_tracking_params = next_page_info_json["continuationEndpoint"][
@@ -83,20 +81,27 @@ class Youtube:
                 video_id = detail["videoRenderer"]["videoId"]
 
                 try:
+                    chhannel_name = detail["videoRenderer"]["ownerText"]["runs"][0][
+                        "text"
+                    ]
+                except:
+                    chhannel_name = ""
+
+                try:
                     title = detail["videoRenderer"]["title"]["runs"][0]["text"]
                 except:
-                    title = ''
+                    title = ""
                 # 조회수
                 try:
                     view_count = detail["videoRenderer"]["viewCountText"]["simpleText"]
                 except:
-                    view_count = ''
+                    view_count = ""
 
                 # 발행일
                 try:
                     published_at = detail["videoRenderer"]["publishedTimeText"][
-                    "simpleText"
-                ]
+                        "simpleText"
+                    ]
                 except:
                     published_at = ""
 
@@ -113,11 +118,12 @@ class Youtube:
 
                 result.append(
                     {
-                        'video_id': video_id,
-                        'title': title,
-                        'view_count': view_count,
-                        'published_at': published_at,
-                        'detail': detail,
+                        "video_id": video_id,
+                        "title": title,
+                        "view_count": view_count,
+                        "published_at": published_at,
+                        "detail": detail,
+                        "chhannel_name": chhannel_name,
                     }
                 )
 
@@ -170,6 +176,13 @@ class Youtube:
                     ]
 
                     try:
+                        chhannel_name = detail["videoRenderer"]["ownerText"]["runs"][0][
+                            "text"
+                        ]
+                    except:
+                        chhannel_name = ""
+
+                    try:
                         detail = detail["videoRenderer"]["detailedMetadataSnippets"][0][
                             "snippetText"
                         ]["runs"][0]["text"]
@@ -179,11 +192,12 @@ class Youtube:
                     limit_count -= 1
                     result.append(
                         {
-                            'video_id': video_id,
-                            'title': title,
-                            'view_count': view_count,
-                            'published_at': published_at,
-                            'detail': detail,
+                            "video_id": video_id,
+                            "title": title,
+                            "view_count": view_count,
+                            "published_at": published_at,
+                            "detail": detail,
+                            "chhannel_name": chhannel_name,
                         }
                     )
 
