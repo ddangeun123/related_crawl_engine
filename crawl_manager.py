@@ -4,6 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import sys
+import time
 
 
 class Crawler():
@@ -25,7 +26,7 @@ class Crawler():
             self.driver.quit()
             self.driver = webdriver.Chrome(options=options)
             
-    def Search_Naver(self, keyword:str):
+    def Search_Naver(self, keyword:str, delay:float):
         result = []
         url = f'https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query={keyword}'
         self.driver.get(url=url)
@@ -69,66 +70,7 @@ class Crawler():
             }
 
         return data, True
-    def Search_Google(self, keyword:str):
-        driver = self.driver
-        for _ in range(3):
-            driver.execute_script('window.open("https://www.google.com/");')
-
-        tabs = driver.window_handles
-        search_count = 0
-        total_search_count = 0
-        results = []
-        for i in range(0, len(keyword)):
-            if search_count>=30:
-                driver.quit()
-                self.driver = webdriver.Chrome(options=self.chrome_option)
-                driver = self.driver
-                for _ in range(3):
-                    driver.execute_script('window.open("https://www.google.com/");')
-
-                tabs = driver.window_handles
-                search_count=0
-
-            window_count = len(tabs)
-            driver.switch_to.window(tabs[i%window_count])
-            driver.get('https://www.google.com/search?q='+keyword[i])
-            try:
-                elements = driver.find_elements(By.CLASS_NAME, 's75CSd')
-
-                texts = []
-                for element in elements:
-                    texts.append(element.text)
-                json_result = {
-                    '검색어' : keyword[i],
-                    '관련검색어' : texts
-                }
-                total_search_count+=1
-                search_count+=1
-
-
-                print(json_result, total_search_count)
-                results.append(json_result)
-            except NoSuchElementException:
-                total_search_count+=1
-                search_count+=1
-
-                json_result = {
-                '검색어' : keyword[i],
-                '관련검색어' : '연관 검색어가 없습니다.'
-            }
-                print(json_result, total_search_count)
-                results.append(json_result)
-                # time.sleep(ran)
-            except Exception as e:
-                return ['알수없는 에러가 발생했습니다. 에러코드 :'+e]
-
-        for i in tabs:
-            if i != tabs[0]:
-                driver.switch_to.window(i)
-                driver.close()
-        driver.switch_to.window(tabs[0])
-        return results
-    def Google_Search_Test(self, keyword):
+    def Search_Google(self, keyword:str, delay:float):
         url = f'https://www.google.com/search?q={keyword}'
         self.driver.get(url)
         succesed = False
@@ -155,12 +97,13 @@ class Crawler():
             }
             return json_result, succesed
         
-    def Search_NaverShopping(self, keyword):
+    def Search_NaverShopping(self, keyword, delay:float):
         result = []
         url = f'https://msearch.shopping.naver.com/search/all?query={keyword}&prevQuery={keyword}'
         self.driver.get(url=url)
         try:
-            target = self.driver.find_element(By.CLASS_NAME, 'relatedTag_scroll_area__NG5Gs')
+            time.sleep(delay)
+            target = self.driver.find_element(By.CLASS_NAME, 'intentKeyword_pannel_inner__e93lz')
             elements = target.find_elements(By.TAG_NAME, 'a')
             for ele in elements:
                 result.append(ele.text)
@@ -177,3 +120,5 @@ class Crawler():
             }
 
         return data, True
+    
+

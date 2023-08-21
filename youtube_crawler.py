@@ -40,11 +40,16 @@ class Youtube:
             initial_data_json = json.loads(initial_data_json_raw)
 
             # 다음 페이지 정보 가져오기
-            next_page_info_json = initial_data_json["contents"][
-                "twoColumnSearchResultsRenderer"
-            ]["primaryContents"]["sectionListRenderer"]["contents"][1][
-                "continuationItemRenderer"
-            ]
+            try:
+                next_page_info_json = initial_data_json["contents"][
+                    "twoColumnSearchResultsRenderer"
+                ]["primaryContents"]["sectionListRenderer"]["contents"][1][
+                    "continuationItemRenderer"
+                ]
+            except:
+                next_page_info_json = {
+                    
+                }
 
             # 값 넣어주기
             self.click_tracking_params = next_page_info_json["continuationEndpoint"][
@@ -77,14 +82,23 @@ class Youtube:
 
                 video_id = detail["videoRenderer"]["videoId"]
 
-                title = detail["videoRenderer"]["title"]["runs"][0]["text"]
+                try:
+                    title = detail["videoRenderer"]["title"]["runs"][0]["text"]
+                except:
+                    title = ''
                 # 조회수
-                view_count = detail["videoRenderer"]["viewCountText"]["simpleText"]
+                try:
+                    view_count = detail["videoRenderer"]["viewCountText"]["simpleText"]
+                except:
+                    view_count = ''
 
                 # 발행일
-                published_at = detail["videoRenderer"]["publishedTimeText"][
+                try:
+                    published_at = detail["videoRenderer"]["publishedTimeText"][
                     "simpleText"
                 ]
+                except:
+                    published_at = ""
 
                 # 상세보기
 
@@ -99,11 +113,11 @@ class Youtube:
 
                 result.append(
                     {
-                        video_id: video_id,
-                        title: title,
-                        view_count: view_count,
-                        published_at: published_at,
-                        detail: detail,
+                        'video_id': video_id,
+                        'title': title,
+                        'view_count': view_count,
+                        'published_at': published_at,
+                        'detail': detail,
                     }
                 )
 
@@ -165,11 +179,11 @@ class Youtube:
                     limit_count -= 1
                     result.append(
                         {
-                            video_id: video_id,
-                            title: title,
-                            view_count: view_count,
-                            published_at: published_at,
-                            detail: detail,
+                            'video_id': video_id,
+                            'title': title,
+                            'view_count': view_count,
+                            'published_at': published_at,
+                            'detail': detail,
                         }
                     )
 
