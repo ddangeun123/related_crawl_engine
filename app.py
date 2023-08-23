@@ -33,12 +33,12 @@ async def search_navershopping(keywords: str):
 async def search_youtube(keywords: str):
     keywords = keywords.split(',')
     result = []
-    for keyword in keywords:
+    for index, keyword in enumerate(keywords):
         data = {
             'keyword':keyword,
-            'result':youtube.get_info_by_keyword(keyword=keyword, limit=10)
+            'result':youtube.get_info_by_keyword(keyword=keyword, limit=10, sleep_sec=2)
         }
-        print(data)
+        print(f'{index}   {data}')
         result.append(data)
     return result
 
