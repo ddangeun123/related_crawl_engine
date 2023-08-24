@@ -13,6 +13,37 @@ class Youtube:
             "context": {},
         }
 
+        self.detail_json = {
+            "contentCheckOk": False,
+            "context": {},
+            # 넣기
+            "params": "",
+            "playbackContext": {
+                "contentPlaybackContext": {
+                    "autoCaptionsDefaultOn": False,
+                    "autonav": False,
+                    "autonavState": "STATE_NONE",
+                    "autoplay": True,
+                    # 넣기
+                    "currentUrl": "",
+                    "html5Preference": "HTML5_PREF_WANTS",
+                    "lactMilliseconds": "-1",
+                    # 넣기
+                    "referer": "",
+                    "signatureTimestamp": 19590,
+                    "splay": False,
+                    "vis": 5,
+                },
+                "watchAmbientModeContext": {
+                    "hasShownAmbientMode": True,
+                    "watchAmbientModeEnabled": True,
+                },
+            },
+            "racyCheckOk": False,
+            # 넣기
+            "videoId": "",
+        }
+
     def get_info_by_keyword(self, keyword: str, limit: int, sleep_sec: float = 1.5):
         try:
             # first page api 요청
@@ -32,7 +63,7 @@ class Youtube:
             config_data = json.loads(config_data_raw)
             # context에 넣기
             self.post_json["context"] = config_data
-
+            self.detail_json["context"] = config_data
             # 결과 json으로 변형
             initial_data = res.split("ytInitialData = ")[1]
             splited = initial_data.split(";</script>")
@@ -84,54 +115,40 @@ class Youtube:
                 if limit_count == 0:
                     break
 
-                video_id = detail["videoRenderer"]["videoId"]
-
                 try:
-                    chhannel_name = detail["videoRenderer"]["ownerText"]["runs"][0][
-                        "text"
+                    self.detail_json["context"]["clickTracking"][
+                        "clickTrackingParams"
+                    ] = detail["videoRenderer"]["navigationEndpoint"][
+                        "clickTrackingParams"
                     ]
-                except:
-                    chhannel_name = ""
 
-                try:
-                    title = detail["videoRenderer"]["title"]["runs"][0]["text"]
-                except:
-                    title = ""
-                # 조회수
-                try:
-                    view_count = detail["videoRenderer"]["viewCountText"]["simpleText"]
-                except:
-                    view_count = ""
+                    self.detail_json["videoId"] = detail["videoRenderer"]["videoId"]
 
-                # 발행일
-                try:
-                    published_at = detail["videoRenderer"]["publishedTimeText"][
-                        "simpleText"
+                    self.detail_json["params"] = detail["videoRenderer"][
+                        "navigationEndpoint"
+                    ]["watchEndpoint"]["playerParams"]
+
+                    self.detail_json["playbackContext"]["contentPlaybackContext"][
+                        "currentUrl"
+                    ] = detail["videoRenderer"]["navigationEndpoint"][
+                        "commandMetadata"
+                    ][
+                        "webCommandMetadata"
+                    ][
+                        "url"
                     ]
-                except:
-                    published_at = ""
 
-                # 상세보기
+                    self.detail_json["playbackContext"]["contentPlaybackContext"][
+                        "referer"
+                    ] = f"https://www.youtube.com/results?search_query={keyword}"
 
-                try:
-                    detail = detail["videoRenderer"]["detailedMetadataSnippets"][0][
-                        "snippetText"
-                    ]["runs"][0]["text"]
+                    print(self.detail_json)
+                    response = self._api_detail_page(self.api_key)
+                    print(response)
                 except:
-                    detail = ""
+                    continue
 
                 limit_count -= 1
-
-                result.append(
-                    {
-                        "video_id": video_id,
-                        "title": title,
-                        "view_count": view_count,
-                        "published_at": published_at,
-                        "detail": detail,
-                        "chhannel_name": chhannel_name,
-                    }
-                )
 
             while limit_count > 0 and is_break == False:
                 time.sleep(sleep_sec)
@@ -248,6 +265,25 @@ class Youtube:
                 raise Exception("stauts code error")
 
             return res.content.decode("utf-8")
+        except:
+            raise Exception("api 실패")
+
+    def _api_detail_page(self, key):
+        try:
+            res = requests.post(
+                f"https://www.youtube.com/youtubei/v1/player?key={key}&prettyPrint=false",
+                headers={
+                    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+                    "accept-language": "ko-KR,ko;q=0.9",
+                    "content-type": "application/json; charset=UTF-8",
+                },
+                json=self.detail_json,
+            )
+
+            if res.status_code != 200:
+                raise Exception("stauts code error")
+
+            return json.loads(res.content)
         except:
             raise Exception("api 실패")
 
