@@ -14,7 +14,6 @@ class Youtube:
         }
 
     def get_info_by_keyword(self, keyword: str, limit: int, sleep_sec: float = 1.5):
-        print(keyword+'검색')
         try:
             # first page api 요청
             res = self._api_search_page(keyword=keyword)
@@ -51,18 +50,19 @@ class Youtube:
                 next_page_info_json = {}
 
             # 값 넣어주기
+            is_break = False
             try:
-                self.click_tracking_params = next_page_info_json["continuationEndpoint"][
-                        "clickTrackingParams"
-                    ]
+                self.click_tracking_params = next_page_info_json[
+                    "continuationEndpoint"
+                ]["clickTrackingParams"]
                 self.continuation_command = next_page_info_json["continuationEndpoint"][
-                        "continuationCommand"
-                    ]["token"]
+                    "continuationCommand"
+                ]["token"]
                 self.post_json["continuation"] = self.continuation_command
             except:
-                self.click_tracking_params = {}
-                self.continuation_command = {}
-                self.post_json = self.continuation_command
+                self.click_tracking_params = ""
+                self.continuation_command = ""
+                is_break = True
 
             # 데이터 가공
             youtube_list_json = initial_data_json["contents"][
@@ -72,8 +72,6 @@ class Youtube:
             ][
                 "contents"
             ]
-
-            is_break = False
 
             # 결과 초기화
             result = []
@@ -93,17 +91,17 @@ class Youtube:
                         "text"
                     ]
                 except:
-                    chhannel_name = {}
+                    chhannel_name = ""
 
                 try:
                     title = detail["videoRenderer"]["title"]["runs"][0]["text"]
                 except:
-                    title = {}
+                    title = ""
                 # 조회수
                 try:
                     view_count = detail["videoRenderer"]["viewCountText"]["simpleText"]
                 except:
-                    view_count = {}
+                    view_count = ""
 
                 # 발행일
                 try:
@@ -111,7 +109,7 @@ class Youtube:
                         "simpleText"
                     ]
                 except:
-                    published_at = {}
+                    published_at = ""
 
                 # 상세보기
 
@@ -135,31 +133,35 @@ class Youtube:
                     }
                 )
 
-            time.sleep(sleep_sec)
-            while limit_count > 0 and is_break:
+            while limit_count > 0 and is_break == False:
                 time.sleep(sleep_sec)
 
                 # 다음 페이지 가져오기
                 initial_data_json = self._api_search_page_next(self.api_key)
 
                 # 다음 페이지를 위한 파라메터 저장
-                self.click_tracking_params = initial_data_json[
-                    "onResponseReceivedCommands"
-                ][0]["clickTrackingParams"]
 
-                self.continuation_command = initial_data_json[
-                    "onResponseReceivedCommands"
-                ][0]["appendContinuationItemsAction"]["continuationItems"][1][
-                    "continuationItemRenderer"
-                ][
-                    "continuationEndpoint"
-                ][
-                    "continuationCommand"
-                ][
-                    "token"
-                ]
+                try:
+                    self.click_tracking_params = initial_data_json[
+                        "onResponseReceivedCommands"
+                    ][0]["clickTrackingParams"]
 
-                self.post_json["continuation"] = self.continuation_command
+                    self.continuation_command = initial_data_json[
+                        "onResponseReceivedCommands"
+                    ][0]["appendContinuationItemsAction"]["continuationItems"][1][
+                        "continuationItemRenderer"
+                    ][
+                        "continuationEndpoint"
+                    ][
+                        "continuationCommand"
+                    ][
+                        "token"
+                    ]
+
+                    self.post_json["continuation"] = self.continuation_command
+                except:
+                    is_break = False
+                    break
 
                 # 데이터 가져오기
                 youtube_list_json = initial_data_json["onResponseReceivedCommands"][0][
@@ -173,19 +175,32 @@ class Youtube:
                     if limit_count == 0:
                         break
 
-                    video_id = detail["videoRenderer"]["videoId"]
-
-                    title = detail["videoRenderer"]["title"]["runs"][0]["text"]
-                    # 조회수
-                    view_count = detail["videoRenderer"]["viewCountText"]["simpleText"]
-
-                    # 발행일
                     try:
-                        published_at = detail["videoRenderer"]["publishedTimeText"][
+                        video_id = detail["videoRenderer"]["videoId"]
+                    except:
+                        video_id = ""
+
+                    try:
+                        title = detail["videoRenderer"]["title"]["runs"][0]["text"]
+                    except:
+                        title = ""
+
+                    try:
+                        # 조회수
+                        view_count = detail["videoRenderer"]["viewCountText"][
                             "simpleText"
                         ]
                     except:
-                        published_at = {}
+                        view_count = ""
+
+                    try:
+                        # 발행일
+                        published_at = detail["videoRenderer"]["publishedTimeText"][
+                            "simpleText"
+                        ]
+
+                    except:
+                        published_at = ""
 
                     try:
                         chhannel_name = detail["videoRenderer"]["ownerText"]["runs"][0][
