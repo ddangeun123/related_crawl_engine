@@ -114,7 +114,7 @@ class Youtube:
 
                 if limit_count == 0:
                     break
-
+                time.sleep(sleep_sec)
                 try:
                     self.detail_json["context"]["clickTracking"][
                         "clickTrackingParams"
@@ -142,9 +142,20 @@ class Youtube:
                         "referer"
                     ] = f"https://www.youtube.com/results?search_query={keyword}"
 
-                    print(self.detail_json)
                     response = self._api_detail_page(self.api_key)
-                    print(response)
+                    result.append(
+                        {
+                            "title": response["videoDetails"]["title"],
+                            "description": response["videoDetails"]["shortDescription"],
+                            "viewCount": response["videoDetails"]["viewCount"],
+                            "author": response["videoDetails"]["author"],
+                            "publishDate": response["microformat"][
+                                "playerMicroformatRenderer"
+                            ]["publishDate"],
+                        }
+                    )
+                    print(result)
+
                 except:
                     continue
 
@@ -177,7 +188,6 @@ class Youtube:
 
                     self.post_json["continuation"] = self.continuation_command
                 except:
-                    is_break = False
                     break
 
                 # 데이터 가져오기
@@ -192,58 +202,55 @@ class Youtube:
                     if limit_count == 0:
                         break
 
-                    try:
-                        video_id = detail["videoRenderer"]["videoId"]
-                    except:
-                        video_id = ""
+                    time.sleep(sleep_sec)
 
                     try:
-                        title = detail["videoRenderer"]["title"]["runs"][0]["text"]
-                    except:
-                        title = ""
-
-                    try:
-                        # 조회수
-                        view_count = detail["videoRenderer"]["viewCountText"][
-                            "simpleText"
-                        ]
-                    except:
-                        view_count = ""
-
-                    try:
-                        # 발행일
-                        published_at = detail["videoRenderer"]["publishedTimeText"][
-                            "simpleText"
+                        self.detail_json["context"]["clickTracking"][
+                            "clickTrackingParams"
+                        ] = detail["videoRenderer"]["navigationEndpoint"][
+                            "clickTrackingParams"
                         ]
 
-                    except:
-                        published_at = ""
+                        self.detail_json["videoId"] = detail["videoRenderer"]["videoId"]
 
-                    try:
-                        chhannel_name = detail["videoRenderer"]["ownerText"]["runs"][0][
-                            "text"
+                        self.detail_json["params"] = detail["videoRenderer"][
+                            "navigationEndpoint"
+                        ]["watchEndpoint"]["playerParams"]
+
+                        self.detail_json["playbackContext"]["contentPlaybackContext"][
+                            "currentUrl"
+                        ] = detail["videoRenderer"]["navigationEndpoint"][
+                            "commandMetadata"
+                        ][
+                            "webCommandMetadata"
+                        ][
+                            "url"
                         ]
-                    except:
-                        chhannel_name = ""
 
-                    try:
-                        detail = detail["videoRenderer"]["detailedMetadataSnippets"][0][
-                            "snippetText"
-                        ]["runs"][0]["text"]
+                        self.detail_json["playbackContext"]["contentPlaybackContext"][
+                            "referer"
+                        ] = f"https://www.youtube.com/results?search_query={keyword}"
+
+                        response = self._api_detail_page(self.api_key)
+                        result.append(
+                            {
+                                "title": response["videoDetails"]["title"],
+                                "description": response["videoDetails"][
+                                    "shortDescription"
+                                ],
+                                "viewCount": response["videoDetails"]["viewCount"],
+                                "author": response["videoDetails"]["author"],
+                                "publishDate": response["microformat"][
+                                    "playerMicroformatRenderer"
+                                ]["publishDate"],
+                            }
+                        )
+                        print(result)
+
                     except:
-                        detail = ""
+                        continue
 
                     limit_count -= 1
-                    result.append(
-                        {
-                            "video_id": video_id,
-                            "title": title,
-                            "view_count": view_count,
-                            "published_at": published_at,
-                            "detail": detail,
-                            "chhannel_name": chhannel_name,
-                        }
-                    )
 
             return result
 
