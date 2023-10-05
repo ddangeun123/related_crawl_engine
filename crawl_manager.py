@@ -2,6 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from bs4 import BeautifulSoup
 
 import sys
 import time
@@ -9,16 +11,21 @@ import time
 
 class Crawler():
     def __init__(self) -> None:
+        
         self.driver = None
         pass
 
     def Set_Browser(self):
+        chromedriver_path = './chromedriver.exe'
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-infobars')
         options.add_argument('no-sandbox')
         options.add_argument('--disable-extensions')
+        options.add_argument('--temp-profile')
+        options.add_argument('--disable-features=SearchProviderFirstRun')
+        options.add_argument('--disable-geolocation')
 
         if self.driver == None:
             self.driver = webdriver.Chrome(options=options)
@@ -52,6 +59,7 @@ class Crawler():
         try:
             popular_element = self.driver.find_element(By.CLASS_NAME, 'intent_popular_wrap')
             elements = popular_element.find_elements(By.CLASS_NAME, 'dsc')
+            
             popular_contents = []
             for ele in elements:
                 popular_contents.append(ele.text)
@@ -101,23 +109,28 @@ class Crawler():
         result = []
         url = f'https://msearch.shopping.naver.com/search/all?query={keyword}&prevQuery={keyword}'
         self.driver.get(url=url)
+        time.sleep(delay)
         try:
-            time.sleep(delay)
-            target = self.driver.find_element(By.CLASS_NAME, 'intentKeyword_pannel_inner__e93lz')
-            elements = target.find_elements(By.TAG_NAME, 'a')
-            for ele in elements:
-                result.append(ele.text)
+            page_source = self.driver.page_source
+            soup = BeautifulSoup(page_source, 'html.parser')
+            targets = soup.find_all(class_='intentKeyword_list_pannel__thfp_')
+            result = []
+            for target in targets:
+                a_tags = target.find_all('a')
+                for tag in a_tags:
+                    result.append(tag.text)
 
             data ={
                 'keyword':keyword,
                 'result':result,
             }
         except Exception as e:
-            result = '관련검색어가 없습니다.'
-            data = {
+            print(e)
+            data ={
                 'keyword':keyword,
-                'result':result,
+                'result':"관련 검색어가 없습니다.",
             }
+        
 
         return data, True
     

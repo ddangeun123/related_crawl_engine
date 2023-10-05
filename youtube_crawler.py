@@ -108,6 +108,10 @@ class Youtube:
             result = []
             limit_count = limit
 
+            """
+            상세페이지 반복
+            """
+
             for detail in youtube_list_json:
                 if "videoRenderer" not in detail:
                     continue
@@ -143,15 +147,44 @@ class Youtube:
                     ] = f"https://www.youtube.com/results?search_query={keyword}"
 
                     response = self._api_detail_page(self.api_key)
+                    
+                    # comment
+                    comment_response = self._api_detail_comment(self.api_key)
+                    token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+                    self.comment_json = {
+                        'context':self.detail_json['context'],
+                        'continuation':token
+                    }
+                    comments_res = self._api_comments(self.api_key)
+                    comment_limit = 10
+                    comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
+                    if comment_count<=10:
+                        comment_limit = comment_count
+                    comments = []
+                    for i in range(0, comment_limit):
+                        comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
+                        author = comment['authorText']['simpleText']
+                        text = comment['contentText']['runs'][0]['text']
+                        comments.append({
+                            'author':author,
+                            'text':text,
+                        })
                     result.append(
                         {
+                            "VideoID": self.detail_json["videoId"],
                             "title": response["videoDetails"]["title"],
-                            "description": response["videoDetails"]["shortDescription"],
+                            "description": response["videoDetails"][
+                                "shortDescription"
+                            ],
                             "viewCount": response["videoDetails"]["viewCount"],
                             "author": response["videoDetails"]["author"],
                             "publishDate": response["microformat"][
                                 "playerMicroformatRenderer"
                             ]["publishDate"],
+                            "comments":{
+                                "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                                "comments":comments
+                            }
                         }
                     )
                     print(result)
@@ -232,8 +265,30 @@ class Youtube:
                         ] = f"https://www.youtube.com/results?search_query={keyword}"
 
                         response = self._api_detail_page(self.api_key)
+
+                        comment_response = self._api_detail_comment(self.api_key)
+                        token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+                        self.comment_json = {
+                            'context':self.detail_json['context'],
+                            'continuation':token
+                        }
+                        comments_res = self._api_comments(self.api_key)
+                        comment_limit = 10
+                        comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
+                        if comment_count<=10:
+                            comment_limit = comment_count
+                        comments = []
+                        for i in range(0, comment_limit):
+                            comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
+                            author = comment['authorText']['simpleText']
+                            text = comment['contentText']['runs'][0]['text']
+                            comments.append({
+                                'author':author,
+                                'text':text,
+                            })
                         result.append(
                             {
+                                "VideoID": self.detail_json["videoId"],
                                 "title": response["videoDetails"]["title"],
                                 "description": response["videoDetails"][
                                     "shortDescription"
@@ -243,6 +298,10 @@ class Youtube:
                                 "publishDate": response["microformat"][
                                     "playerMicroformatRenderer"
                                 ]["publishDate"],
+                                "comments":{
+                                    "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                                    "comments":comments
+                                }
                             }
                         )
                         print(result)
@@ -277,7 +336,9 @@ class Youtube:
 
     def _api_detail_page(self, key):
         try:
-            res = requests.post(
+            session = requests.Session()
+            session.cookies.clear()
+            res = session.post(
                 f"https://www.youtube.com/youtubei/v1/player?key={key}&prettyPrint=false",
                 headers={
                     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
@@ -296,7 +357,9 @@ class Youtube:
 
     def _api_search_page_next(self, key: str):
         try:
-            res = requests.post(
+            session = requests.Session()
+            session.cookies.clear()
+            res = session.post(
                 f"https://www.youtube.com/youtubei/v1/search?key={key}&prettyPrint=false",
                 headers={
                     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
@@ -308,6 +371,49 @@ class Youtube:
 
             if res.status_code != 200:
                 raise Exception("stauts code error")
+
+            return json.loads(res.content)
+        except:
+            raise Exception("api 실패")
+        
+    def _api_detail_comment(self, key:str):
+        try:
+            session = requests.Session()
+            session.cookies.clear()
+            res = session.post(
+                # f"https://www.youtube.com/youtubei/v1/player?key={key}&prettyPrint=false",
+                f"https://www.youtube.com/youtubei/v1/next?key={key}&prettyPrint=false",
+                headers={
+                    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+                    "accept-language": "ko-KR,ko;q=0.9",
+                    "content-type": "application/json; charset=UTF-8",
+                },
+                json=self.detail_json,
+            )
+
+            if res.status_code != 200:
+                raise Exception("stauts code error")
+
+            return json.loads(res.content)
+        except:
+            raise Exception("api 실패")
+        
+    def _api_comments(self, key:str):
+        try:
+            session = requests.Session()
+            session.cookies.clear()
+            res = session.post(
+                f"https://www.youtube.com/youtubei/v1/next?key={key}&prettyPrint=false",
+                headers={
+                    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+                    "accept-language": "ko-KR,ko;q=0.9",
+                    "content-type": "application/json; charset=UTF-8",
+                },
+                json=self.comment_json,
+            )
+
+            if res.status_code != 200:
+                raise Exception("status code error")
 
             return json.loads(res.content)
         except:

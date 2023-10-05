@@ -11,8 +11,6 @@ crawler = Crawler()
 youtube = Youtube()
 
 
-
-
 @app.get("/search/google")
 async def search_google(keywords: str):
     results = default_search(keywords=keywords, limit=50, type='Google')
@@ -29,6 +27,7 @@ async def search_navershopping(keywords: str):
     result = default_search(keywords=keywords, limit=25, delay=0.8, type='NaverShopping')
     return result
 
+# limit = 읽어올 영상 개수 sleep_sec = 다음 영상 읽기전 기다릴 시간 (필수 0은 위험함)
 @app.get("/search/youtube")
 async def search_youtube(keywords: str):
     keywords = keywords.split(',')
@@ -36,7 +35,7 @@ async def search_youtube(keywords: str):
     for index, keyword in enumerate(keywords):
         data = {
             'keyword':keyword,
-            'result':youtube.get_info_by_keyword(keyword=keyword, limit=10, sleep_sec=2)
+            'result':youtube.get_info_by_keyword(keyword=keyword, limit=250, sleep_sec=0.2)
         }
         print(f'{index}   {data}')
         result.append(data)
