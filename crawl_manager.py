@@ -57,12 +57,16 @@ class Crawler():
             }
 
         try:
-            popular_element = self.driver.find_element(By.CLASS_NAME, 'intent_popular_wrap')
-            elements = popular_element.find_elements(By.CLASS_NAME, 'dsc')
-            
+            popular_elements = self.driver.find_elements(By.CLASS_NAME, 'fds-ugc-body-popular-topic-row')
+            popular_ele1 = popular_elements[0].text.split('\n')
+            popular_ele2 = popular_elements[1].text.split('\n')
             popular_contents = []
-            for ele in elements:
-                popular_contents.append(ele.text)
+            for i in range(len(popular_ele1)):
+                try:
+                    popular_contents.append(popular_ele1[i])
+                    popular_contents.append(popular_ele2[i])
+                except:
+                    pass
             
             data = {
                 'keyword':keyword,
