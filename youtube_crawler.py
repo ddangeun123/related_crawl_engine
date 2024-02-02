@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import traceback
 
 
 class Youtube:
@@ -104,6 +105,10 @@ class Youtube:
                 "contents"
             ]
 
+            # 유튜브 리스트 json 저장
+            with open("youtube_list.json", 'w') as json_file:
+                json.dump(youtube_list_json, json_file, ensure_ascii=False, indent=4)
+
             # 결과 초기화
             result = []
             limit_count = limit
@@ -114,7 +119,8 @@ class Youtube:
 
             for detail in youtube_list_json:
                 if "videoRenderer" not in detail:
-                    continue
+                    if "reelShelfRenderer" not in detail:
+                        continue
 
                 if limit_count == 0:
                     break
@@ -125,7 +131,6 @@ class Youtube:
                     ] = detail["videoRenderer"]["navigationEndpoint"][
                         "clickTrackingParams"
                     ]
-
                     self.detail_json["videoId"] = detail["videoRenderer"]["videoId"]
 
                     self.detail_json["params"] = detail["videoRenderer"][
@@ -187,10 +192,113 @@ class Youtube:
                             }
                         }
                     )
-                    print(result)
+                    print(result[-1])
 
                 except:
-                    continue
+                    self.detail_items = detail["reelShelfRenderer"]["items"]
+                    for item in self.detail_items:
+                        try:
+                            self.detail_json["context"]["clickTracking"][
+                                "clickTrackingParams"
+                            ] = item["reelItemRenderer"]["navigationEndpoint"][
+                                "clickTrackingParams"
+                            ]
+                            self.detail_json["videoId"] = item["reelItemRenderer"]["videoId"]
+
+                            self.detail_json["params"] = item["reelItemRenderer"][
+                                "navigationEndpoint"
+                            ][
+                                "reelWatchEndpoint"
+                                ]["playerParams"]
+
+                            self.detail_json["playbackContext"]["contentPlaybackContext"][
+                                "currentUrl"
+                            ] = item["reelItemRenderer"]["navigationEndpoint"][
+                                "commandMetadata"
+                            ][
+                                "webCommandMetadata"
+                            ][
+                                "url"
+                            ]
+
+                            self.detail_json["playbackContext"]["contentPlaybackContext"][
+                                "referer"
+                            ] = f"https://www.youtube.com/results?search_query={keyword}"
+
+                            response = self._api_detail_page(self.api_key)
+                            
+                            # comment
+                            comment_response = self._api_detail_comment(self.api_key)
+                            token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+                            self.comment_json = {
+                                'context':self.detail_json['context'],
+                                'continuation':token
+                            }
+                            comments_res = self._api_comments(self.api_key)
+                            comment_limit = 10
+                            try:
+                                comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
+                                if comment_count<=10:
+                                    comment_limit = comment_count
+                            except:
+                                comment_count = 0
+                                comment_limit = 0
+                            comments = []
+                            for i in range(0, comment_limit):
+                                try:
+                                    comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
+                                    author = comment['authorText']['simpleText']
+                                    text = comment['contentText']['runs'][0]['text']
+                                    comments.append({
+                                        'author':author,
+                                        'text':text,
+                                    })
+                                except Exception as e:
+                                    print(e)
+                                    continue
+                            if comment_count != 0:
+                                result.append(
+                                    {
+                                        "VideoID": self.detail_json["videoId"],
+                                        "title": f'#shorts {response["videoDetails"]["title"]}',
+                                        "description": f'#shorts {response["videoDetails"]["shortDescription"]}',
+                                        "viewCount": 0,
+                                        "author": response["videoDetails"][
+                                            "author"
+                                            ],
+                                        "publishDate": response["microformat"][
+                                            "playerMicroformatRenderer"
+                                        ]["publishDate"],
+                                        "comments":{
+                                            "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                                            "comments":comments
+                                        }
+                                    }
+                                )
+                            else:
+                                result.append(
+                                    {
+                                        "VideoID": self.detail_json["videoId"],
+                                        "title": f'#shorts {response["videoDetails"]["title"]}',
+                                        "description": f'#shorts {response["videoDetails"]["shortDescription"]}',
+                                        "viewCount": 0,
+                                        "author": response["videoDetails"][
+                                            "author"
+                                            ],
+                                        "publishDate": response["microformat"][
+                                            "playerMicroformatRenderer"
+                                        ]["publishDate"],
+                                        "comments":{
+                                            "count":0,
+                                            "comments":comments
+                                        }
+                                    }
+                                )
+                            print(result[-1])
+                        except Exception as e:
+                            print(e)
+                            traceback.print_exc()
+                            continue
 
                 limit_count -= 1
 
@@ -311,10 +419,11 @@ class Youtube:
 
                     limit_count -= 1
 
-            return result
 
         except Exception as e:
-            raise e
+            print(e)
+        return result
+
 
     def _api_search_page(self, keyword: str):
         try:
@@ -329,7 +438,7 @@ class Youtube:
 
             if res.status_code != 200:
                 raise Exception("stauts code error")
-
+            
             return res.content.decode("utf-8")
         except:
             raise Exception("api 실패")

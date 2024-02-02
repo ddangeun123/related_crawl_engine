@@ -22,6 +22,11 @@ async def search_naver(keywords: str):
     result = default_search(keywords=keywords, limit=50, type='Naver')
     return result
 
+@app.get("/search/naver/popular")
+async def search_naver_popular(keywords: str):
+    result = default_search(keywords=keywords, limit=50, type='NaverPopular')
+    return result
+
 @app.get("/search/navershopping")
 async def search_navershopping(keywords: str):
     result = default_search(keywords=keywords, limit=25, delay=0.8, type='NaverShopping')
@@ -39,6 +44,14 @@ async def search_youtube(keywords: str):
         }
         print(f'{index}   {data}')
         result.append(data)
+    if len(result) == 0 :
+        for index, keyword in enumerate(keywords):
+            data = {
+                'keyword':keyword,
+                'result':youtube.get_info_by_keyword(keyword=keyword, limit=250, sleep_sec=0.2)
+            }
+            print(f'{index}   {data}')
+            result.append(data)
     return result
 
 def default_search(keywords:str, limit:int, type:str, delay:float=0.0):
@@ -46,6 +59,7 @@ def default_search(keywords:str, limit:int, type:str, delay:float=0.0):
     crawler.Set_Browser()
     type_map = {
         'Naver':crawler.Search_Naver,
+        'NaverPopular':crawler.Search_Naver_Popular,
         'NaverShopping':crawler.Search_NaverShopping,
         'Google':crawler.Search_Google,
     }

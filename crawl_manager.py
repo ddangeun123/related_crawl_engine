@@ -3,6 +3,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
 import sys
@@ -37,8 +39,12 @@ class Crawler():
         result = []
         url = f'https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query={keyword}'
         self.driver.get(url=url)
+        wait = WebDriverWait(self.driver, 5)
         try:
             target = self.driver.find_element(By.CLASS_NAME, 'lst_related_srch')
+            wait.until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, 'tit'))
+            )
             elements = target.find_elements(By.CLASS_NAME, 'tit')
             for ele in elements:
                 result.append(ele.text)
@@ -46,18 +52,24 @@ class Crawler():
             data ={
                 'keyword':keyword,
                 'result':result,
-                'popular_contents':''
             }
         except Exception as e:
             result = '관련검색어가 없습니다.'
             data = {
                 'keyword':keyword,
                 'result':result,
-                'popular_contents':''
             }
-
+        return data, True
+    
+    def Search_Naver_Popular(self, keyword:str, delay:float):
+        url = f'https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query={keyword}'
+        self.driver.get(url=url)
+        wait = WebDriverWait(self.driver, 5)
         try:
-            popular_elements = self.driver.find_elements(By.CLASS_NAME, 'fds-ugc-body-popular-topic-row')
+            popular_elements = wait.until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, 'fds-ugc-body-popular-topic-row'))
+            )
+            # popular_elements = self.driver.find_elements(By.CLASS_NAME, 'fds-ugc-body-popular-topic-row')
             popular_ele1 = popular_elements[0].text.split('\n')
             popular_ele2 = popular_elements[1].text.split('\n')
             popular_contents = []
@@ -70,18 +82,16 @@ class Crawler():
             
             data = {
                 'keyword':keyword,
-                'result':result,
                 'popular_contents':popular_contents
             }
         except Exception as e:
             popular_contents = '인기 주제가 없습니다.'
             data = {
                 'keyword':keyword,
-                'result':result,
                 'popular_contents':popular_contents
             }
-
         return data, True
+    
     def Search_Google(self, keyword:str, delay:float):
         url = f'https://www.google.com/search?q={keyword}'
         self.driver.get(url)
