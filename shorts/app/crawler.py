@@ -15,6 +15,7 @@ class Crawler:
             "continuation": "",
             "context": {},
         }
+        self.try_page = 0
 
         self.detail_json = {
             "contentCheckOk": False,
@@ -256,7 +257,9 @@ class Crawler:
                 initial_data_json = self._api_search_page_next(self.api_key)
 
                 # 다음 페이지를 위한 파라메터 저장
-
+                self.try_page += 1
+                if self.try_page > 5 and len(result) <= 1:
+                    return '쇼츠 영상이 없습니다.'
                 try:
                     self.click_tracking_params = initial_data_json[
                         "onResponseReceivedCommands"

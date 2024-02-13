@@ -43,6 +43,8 @@ def default_search(keywords:str, limit:int, type:str, delay:float=0.0):
             crawler.Set_Browser()
             current_limit += limit
         result, succesed = type_map[type](keyword, delay)
+        # result, succesed = type_map.get(type, lambda x, y: (None, False))(keyword, delay)
+
         # result, succes = crawler.Search(keyword)
         if succesed:
             sucess_count+=1

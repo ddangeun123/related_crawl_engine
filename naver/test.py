@@ -4,7 +4,7 @@ import json
 import time
 
 def Send_request(keyword):
-    base_url = 'http://localhost:8000/search/navershopping?'
+    base_url = 'http://localhost:8000/search/naver?'
     keywords = f'keywords={quote(keyword)}'
     try:
         res = requests.get(base_url+keywords)
@@ -19,20 +19,23 @@ def Send_request(keyword):
     except Exception as e:
         print(e)
 
+def flatten_nested_lists(nested_list):
+    flattened_list = []
+    for sublist in nested_list:
+        if isinstance(sublist, list):
+            flattened_list.extend(flatten_nested_lists(sublist))
+        else:
+            flattened_list.append(sublist)
+    return flattened_list
+
 def extract_result(string):
+    assert isinstance(string, str), "입력은 문자열이어야 합니다."
     try:
         data = json.loads(string)
 
-        results = [item['result'] for item in data]
+        results = flatten_nested_lists([item['result'] for item in data])
 
-        flattened_results = []
-        for sublist in results:
-            for result_item in sublist:
-                if result_item == None:
-                    continue
-                flattened_results.append(result_item)
-
-        return flattened_results
+        return results
     except json.JSONDecodeError as e:
         pass
     except Exception as e:
@@ -45,16 +48,22 @@ if __name__ == '__main__':
     cur_loop = 0
     response = ""
     formatted_result = []
-    keywords = '초콜릿,비스킷,빼빼로,초코,핫초코,제티,우유,밀크초콜릿'
-    db_keywords = []
+    keywords = ['초콜릿']
 
+    formatted_result = []
     while cur_loop < max_loop or response == None or len(formatted_result) <= 0:
-        response = Send_request(keyword=keywords)
-        if response is not None:
-            formatted_result = list(set(extract_result(response)))
-            # formatted_result = [ele_format for ele_format in formatted_result if ele_format not in db_keywords]
-            # db_keywords = list(set(db_keywords.append(formatted_result)))
-            print(formatted_result)
-            cur_loop += 1
-            keywords = str(formatted_result).replace("[", "").replace("]", "")
+        for keyword in keywords:
+            response = Send_request(keyword=keyword)
+            if response is not None:
+                if formatted_result == None:
+                    continue
+                formatted_result.extend(extract_result(response))
+                formatted_result = list(set(formatted_result))
+                # 또는 리스트 컴프리헨션 사용
+                # formatted_result = [[item] for item in set(extract_result(response))]
+
+                # print(formatted_result)
+        cur_loop += 1
         time.sleep(1)
+        keywords = formatted_result
+        print(keywords, len(keywords))
