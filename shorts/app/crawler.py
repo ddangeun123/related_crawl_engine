@@ -197,7 +197,7 @@ class Crawler:
                                 except Exception as e:
                                     print(e)
                                     continue
-                            if comment_count != 0:
+                            if comment_count != 0 or len(comments) <= 0:
                                 result.append(
                                     {
                                         "VideoID": self.detail_json["videoId"],
