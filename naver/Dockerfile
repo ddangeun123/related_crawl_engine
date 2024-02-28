@@ -32,15 +32,6 @@ RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.d
     dpkg -i google-chrome-stable_current_amd64.deb && \
     rm google-chrome-stable_current_amd64.deb
 
-# ENV TOR_SOCKS_PORT=9150
-# ENV TOR_CONTROL_PORT=9151
-
-# # Expose Tor SocksPort
-# EXPOSE $TOR_SOCKS_PORT
-# EXPOSE $TOR_CONTROL_PORT
-
-# # Set up Tor configuration
-# COPY torrc etc/tor/torrc
 
 COPY . .
 

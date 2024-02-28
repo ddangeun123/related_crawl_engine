@@ -509,6 +509,7 @@ class Crawler:
                 f"https://www.youtube.com/results?search_query={keyword}",
                 headers={
                     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+                    # "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
                     "accept-language": "ko-KR,ko;q=0.9",
                     "content-type": "text/html; charset=utf-8",
                 },
