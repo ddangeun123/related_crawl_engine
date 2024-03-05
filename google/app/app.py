@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from driver_manager import DriverManager
-from crawler import Crawler
 from scraper import Scraper
 import re
 import time
 
 app = FastAPI()
-crawler = Crawler()
 driver_manager = DriverManager()
 scraper = Scraper(driver=driver_manager.driver, driver_manager=driver_manager)
 

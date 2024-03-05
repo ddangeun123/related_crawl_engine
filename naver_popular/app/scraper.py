@@ -5,7 +5,6 @@ from selenium.webdriver.common.by import By
 
 from driver_manager import DriverManager
 import time
-from bs4 import BeautifulSoup
 
 class Scraper:
   def __init__(self, driver, driver_manager:DriverManager) -> None:
@@ -57,7 +56,7 @@ class Scraper:
       return data, self.succeed
   
   def retry_func(self, keyword: str, delay: float = 0):
-      if self.retry < 2:
+      if self.retry < 1:
         self.retry += 1
         return self.scrape_naver_popular(keyword=keyword, delay=delay)
       else:

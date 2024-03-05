@@ -28,7 +28,7 @@ async def search_naver_popular(keywords: str):
           'keyword': keywords,
           'popular_contents': '인기 주제가 없습니다.'
       }
-      return data, False
+      return data
     except Exception as e:
       driver_manager.restart_driver(scraper.driver)
       result = scraper.scrape_naver_popular(keyword=keywords, delay=0.5)

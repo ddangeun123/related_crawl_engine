@@ -20,9 +20,9 @@ class Scraper:
     # Implement your scraping logic here
     result = []
     url = f'https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query={keyword}'
-    self.driver.get(url=url)
-    wait = WebDriverWait(self.driver, 10)
     try:
+      self.driver.get(url=url)
+      wait = WebDriverWait(self.driver, 10)
       target = self.driver.find_element(By.CLASS_NAME, 'lst_related_srch')
       wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'tit')))
       elements = target.find_elements(By.CLASS_NAME, 'tit')

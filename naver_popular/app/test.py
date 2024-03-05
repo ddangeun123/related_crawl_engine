@@ -4,7 +4,7 @@ import json
 import time
 
 def Send_request(keyword):
-    base_url = 'http://localhost:8000/search/naver?'
+    base_url = 'http://localhost:8000/search/naver/popular?'
     keywords = f'keywords={quote(keyword)}'
     try:
         res = requests.get(base_url+keywords)
@@ -32,9 +32,10 @@ def extract_result(string):
     assert isinstance(string, str), "입력은 문자열이어야 합니다."
     try:
         data = json.loads(string)
-
-        results = flatten_nested_lists([item['result'] for item in data])
-
+        # print(data)
+        # results = flatten_nested_lists(item['result'] for item in data)
+        results = data[0]['popular_contents']
+        # print(results)
         return results
     except json.JSONDecodeError as e:
         pass
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     cur_loop = 0
     response = ""
     formatted_result = []
-    keywords = ['초콜릿']
+    keywords = ['경주']
 
     formatted_result = []
     while cur_loop < max_loop or response == None or len(formatted_result) <= 0:
