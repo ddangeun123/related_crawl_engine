@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from driver_manager import DriverManager
 import time
 from bs4 import BeautifulSoup
+import json
 
 
 class Scraper:
@@ -56,8 +57,9 @@ class Scraper:
         'keyword': keyword,
         'result': result,
     }
-    print(data)
-    return data, True
+    json_data = json.dumps(data)
+    print(json_data)
+    return json_data, True
 
   def scrape_navershopping(self, keyword:str, delay:float=0):
     url = f'https://msearch.shopping.naver.com/search/all?query={keyword}&prevQuery={keyword}'
@@ -115,8 +117,10 @@ class Scraper:
           'result': '관련 검색어가 없습니다.',
       }
       self.driver = self.driver_manager.restart_driver(self.driver)
-    print(data)
-    return data, True
+    json_data = json.dumps(data)
+    print(json_data)
+
+    return json_data, True
 
 if __name__ == '__main__':
   # Example usage:
