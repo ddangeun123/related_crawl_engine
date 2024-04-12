@@ -1,23 +1,23 @@
+from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, WebDriverException, TimeoutException
 from selenium.webdriver.common.by import By
 
-from driver_manager import DriverManager
+from selenium_driver import SeleniumDriver
 import time
 from bs4 import BeautifulSoup
 import json
 
 
 class Scraper:
-  def __init__(self, driver, driver_manager:DriverManager):
+  def __init__(self, driver : Chrome = None):
     # Initialize any necessary variables or objects here
     self.driver = driver
-    self.driver_manager = driver_manager
     self.retry = 0
     pass
 
-  def scrape_naver(self, keyword:str, delay:float=0):
+  def scrape_naver(self, keyword:str, delay:float=0.25):
     # Implement your scraping logic here
     result = []
     url = f'https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query={keyword}'
@@ -41,7 +41,7 @@ class Scraper:
         result = '관련검색어가 없습니다.'
 
         # 종료 함수 수정
-        self.driver = self.driver_manager.restart_driver(self.driver)
+        self.driver = SeleniumDriver().restart_driver(self.driver)
         self.retry = 0
     except WebDriverException:
       self.retry += 1
@@ -51,17 +51,17 @@ class Scraper:
         result = '관련검색어가 없습니다.'
 
         # 종료 함수 수정
-        self.driver = self.driver_manager.restart_driver(self.driver)
+        self.driver = SeleniumDriver().restart_driver(self.driver)
         self.retry = 0
     data = {
         'keyword': keyword,
         'result': result,
     }
-    json_data = json.dumps(data)
+    json_data = json.dumps(data, ensure_ascii=False)
     print(json_data)
-    return json_data, True
+    return json_data, self.driver
 
-  def scrape_navershopping(self, keyword:str, delay:float=0):
+  def scrape_navershopping(self, keyword:str, delay:float=0.25):
     url = f'https://msearch.shopping.naver.com/search/all?query={keyword}&prevQuery={keyword}'
     self.driver.get(url=url)
     time.sleep(delay)
@@ -95,7 +95,7 @@ class Scraper:
         }
 
         # 종료 함수 수정
-        self.driver = self.driver_manager.restart_driver(self.driver)
+        self.driver = SeleniumDriver().restart_driver(self.driver)
         self.retry = 0
     except WebDriverException:
       self.retry += 1
@@ -107,7 +107,7 @@ class Scraper:
             'keyword': keyword,
             'result': result,
         }
-        self.driver = self.driver_manager.restart_driver(self.driver)
+        self.driver = SeleniumDriver().restart_driver(self.driver)
         self.retry = 0
 
     except Exception as e:
@@ -116,16 +116,16 @@ class Scraper:
           'keyword': keyword,
           'result': '관련 검색어가 없습니다.',
       }
-      self.driver = self.driver_manager.restart_driver(self.driver)
-    json_data = json.dumps(data)
+      self.driver = SeleniumDriver().restart_driver(self.driver)
+    json_data = json.dumps(data, ensure_ascii=False)
     print(json_data)
 
-    return json_data, True
+    return json_data, self.driver
+
 
 if __name__ == '__main__':
   # Example usage:
-  driver_manager = DriverManager()
-  scraper = Scraper(driver=driver_manager.get_available_driver(), driver_manager=driver_manager)
+  scraper = Scraper()
   scraper.scrape_naver(keyword='제일기획', delay=0.5)
   scraper.scrape_navershopping(keyword='제일기획', delay=0.5)
   scraper.scrape_navershopping(keyword='초콜릿', delay=0.5)

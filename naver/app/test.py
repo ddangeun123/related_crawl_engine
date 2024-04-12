@@ -4,8 +4,8 @@ import json
 import time
 
 def Send_request(keyword):
-    base_url = 'http://localhost:8000/search/navershopping?'
-    keywords = f'keywords={quote(keyword)}'
+    base_url = 'http://localhost:8001/search/navershopping?'
+    keywords = f'keywords={quote(keyword, encoding="utf-8")}'
     try:
         res = requests.get(base_url+keywords)
 
@@ -20,7 +20,7 @@ def Send_request(keyword):
         print(e)
 
 def flatten_nested_lists(nested_list):
-    try:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+    try:
         assert nested_list is list, "입력은 리스트여야 합니다."
     except AssertionError as e:
         return []
@@ -36,18 +36,24 @@ def flatten_nested_lists(nested_list):
     return flattened_list
 
 def extract_result(string):
+    data = None
     assert isinstance(string, str), "입력은 문자열이어야 합니다."
 
     try:
-        data = json.loads(string)
+        data = json.loads(json.loads(string))
         # print(data)
         # results = flatten_nested_lists(item['result'] for item in data)
-        results = data[0]['result']
+        results = data['result']
         # print(results)
 
         return results
     except json.JSONDecodeError as e:
         pass
+    except TypeError:
+        if data is None:
+            return None
+        results = data['result']
+        return results
     except Exception as e:
         print(f"디코딩 에러 : {e}")
         return None
@@ -65,10 +71,12 @@ if __name__ == '__main__':
         for keyword in keywords:
             response = Send_request(keyword=keyword)
             if response is not None:
-                if formatted_result is None:  # Check if formatted_result is None
-                    formatted_result = []  # Initialize formatted_result as an empty list
-                formatted_result.extend(extract_result(response))
-                formatted_result = list(set(formatted_result))
+                extracted_result = extract_result(response)
+                if extracted_result is not None:  # Check if extracted_result is not None
+                    if formatted_result is None:  # Check if formatted_result is None
+                        formatted_result = []  # Initialize formatted_result as an empty list
+                    formatted_result.extend(extracted_result)
+                    formatted_result = list(set(formatted_result))
 
         cur_loop += 1
         time.sleep(1)

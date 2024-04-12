@@ -2,7 +2,7 @@ from selenium_driver import SeleniumDriver
 
 class DriverManager:
   def __init__(self, driver_count:int=1):
-    self.driver = SeleniumDriver().set_up()
+    pass
 
   def restart_driver(self, driver):
     driver.quit()
