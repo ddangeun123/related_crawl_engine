@@ -8,13 +8,13 @@ app = FastAPI()
 crawler = Crawler()
 
 @app.get("/search/youtube")
-async def search_youtube(keywords: str):
+async def search_youtube(keywords: str, limit:int=250):
     keywords = keywords.split(',')
     result = []
     for index, keyword in enumerate(keywords):
         data = {
             'keyword':keyword,
-            'result':crawler.get_info_by_keyword(keyword=keyword, limit=250, sleep_sec=0.2)
+            'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
         }
         print(f'{index}   {data}')
         result.append(data)
@@ -22,20 +22,20 @@ async def search_youtube(keywords: str):
         for index, keyword in enumerate(keywords):
             data = {
                 'keyword':keyword,
-                'result':crawler.get_info_by_keyword(keyword=keyword, limit=250, sleep_sec=0.2)
+                'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
             }
             print(f'{index}   {data}')
             result.append(data)
     return result
 
 @app.get("/search/youtube_test")
-def search_youtube_test():
+def search_youtube_test(keywords: str, limit:int=5):
     keywords = keywords.split(',')
     result = []
     for index, keyword in enumerate(keywords):
         data = {
             'keyword':keyword,
-            'result':crawler.get_info_by_keyword(keyword=keyword, limit=5, sleep_sec=0.2)
+            'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
         }
         print(f'{index}   {data}')
         result.append(data)
@@ -43,7 +43,7 @@ def search_youtube_test():
         for index, keyword in enumerate(keywords):
             data = {
                 'keyword':keyword,
-                'result':crawler.get_info_by_keyword(keyword=keyword, limit=5, sleep_sec=0.2)
+                'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
             }
             print(f'{index}   {data}')
             result.append(data)
