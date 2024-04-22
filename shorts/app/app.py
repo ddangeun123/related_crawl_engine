@@ -28,13 +28,13 @@ async def search_youtube(keywords: str, limit:int=150):
             result.append(data)
     return result
 @app.get("/search/shorts_test")
-async def search_youtube_test(keywords: str):
+async def search_youtube_test(keywords: str, limit:int=5):
     keywords = keywords.split(',')
     result = []
     for index, keyword in enumerate(keywords):
         data = {
             'keyword':keyword,
-            'result':crawler.get_info_by_keyword(keyword=keyword, limit=5, sleep_sec=0.2)
+            'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
         }
         print(f'{index}   {data}')
         result.append(data)
@@ -42,7 +42,7 @@ async def search_youtube_test(keywords: str):
         for index, keyword in enumerate(keywords):
             data = {
                 'keyword':keyword,
-                'result':crawler.get_info_by_keyword(keyword=keyword, limit=5, sleep_sec=0.2)
+                'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
             }
             print(f'{index}   {data}')
             result.append(data)

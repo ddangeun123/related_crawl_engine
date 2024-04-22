@@ -138,6 +138,8 @@ class Crawler:
                     shorts_list = detail["reelShelfRenderer"]["items"]
 
                     for item in shorts_list:
+                        if limit_count == 0:
+                            break
                         try:
                             self.detail_json["context"]["clickTracking"][
                                 "clickTrackingParams"
@@ -240,6 +242,8 @@ class Crawler:
                             print(e)
                             traceback.print_exc()
                             continue
+                        finally:
+                            limit_count -= 1
                     
                     print(result[-1])
 
@@ -248,7 +252,6 @@ class Crawler:
                     traceback.print_exc()
                     continue
 
-                limit_count -= 1
 
             while limit_count > 0 and is_break == False:
                 time.sleep(sleep_sec)
@@ -398,6 +401,8 @@ class Crawler:
                         except Exception as e:
                             print("비디오 정보 수집 에러 or 쇼츠 영상", e)
                             continue
+                        finally:
+                            limit_count -= 1
 
                     response = self._api_detail_page(self.api_key)
                     try:
@@ -495,8 +500,8 @@ class Crawler:
                                 "comments":[]
                             }
                         })
-
-                    limit_count -= 1
+                    finally:
+                        limit_count -= 1
 
         except Exception as e:
             print(e)
