@@ -482,6 +482,7 @@ class Crawler:
                         print(result[-1])
                     except Exception as e:
                         print("댓글 정지 or 댓글 오류", e)
+                        traceback.print_exc()
                         print(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand'])
                         result.append(
                         {

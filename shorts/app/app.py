@@ -8,7 +8,7 @@ app = FastAPI()
 crawler = Crawler()
 
 @app.get("/search/shorts")
-async def search_youtube(keywords: str, limit:int=150):
+def search_youtube(keywords: str, limit:int=150):
     keywords = keywords.split(',')
     result = []
     for index, keyword in enumerate(keywords):
@@ -28,7 +28,7 @@ async def search_youtube(keywords: str, limit:int=150):
             result.append(data)
     return result
 @app.get("/search/shorts_test")
-async def search_youtube_test(keywords: str, limit:int=5):
+def search_youtube_test(keywords: str, limit:int=5):
     keywords = keywords.split(',')
     result = []
     for index, keyword in enumerate(keywords):
