@@ -1,116 +1,80 @@
 from fastapi import FastAPI, HTTPException
-from driver_manager import DriverManager
-from selenium_driver import SeleniumDriver
-from scraper import Scraper
+from selenium import webdriver
+from bs4 import BeautifulSoup
 from urllib.parse import unquote
-from concurrent.futures import ThreadPoolExecutor
-from starlette.concurrency import run_in_threadpool
-import traceback
-import time
 
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+import traceback
 from requests.exceptions import RequestException
 
+from scraper import Scraper
 
 app = FastAPI()
-driver_manager = DriverManager()
+executor = ThreadPoolExecutor(max_workers=4)
 
-driver_pool = ThreadPoolExecutor(max_workers=5)
-drivers = [SeleniumDriver().set_up() for _ in range(5)]
-for driver in drivers:
-    driver_pool.submit(lambda: driver)
+def fetch(url):
+    driver = webdriver.Chrome()
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    driver.quit()
+    return str(soup)
 
-response_count = 0
+@app.get("/crawl/")
+async def read_root(url: str):
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(executor, fetch, url)
+    return {"html": result}
 
-async def get_driver():
+def naver_task(keywords: str):
     try:
-        driver_future = driver_pool.submit(lambda: drivers.pop())
-        return await run_in_threadpool(driver_future.result)
-    except IndexError:
-        driver = SeleniumDriver().set_up()
-        drivers.append(driver)
-        driver_future = driver_pool.submit(lambda: drivers.pop())
-        return await run_in_threadpool(driver_future.result)
+        scraper = Scraper()
+        result = scraper.scrape_naver(keywords)
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        traceback.print_exc()
+        print(f'naver_task error: {e}')
+    finally:
+        scraper.driver.quit()
 
 @app.get("/search/naver")
 async def search_naver(keywords: str):
     try:
-        global response_count
-        if not keywords:
-            raise HTTPException(status_code=400, detail="No keywords provided")
+        loop = asyncio.get_event_loop()
         keywords = unquote(keywords, encoding='utf-8')
-        driver = await get_driver()
-        scraper = Scraper(driver=driver)
-
-        result = await naver_task(keywords, scraper)
+        result = await loop.run_in_executor(executor, naver_task, keywords)
 
         return result
     except RequestException:
-        time.sleep(3)
-        result = await search_naver(keywords)
+        asyncio.sleep(3)
+        result = await loop.run_in_executor(executor, naver_task, keywords)
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        drivers.append(driver)
-
-async def naver_task(keywords: str, scraper: Scraper):
-    global response_count
+    
+def naver_shopping_task(keywords: str):
     try:
-        response_count += 1
-        result, driver = scraper.scrape_naver(keyword=keywords, delay=0.5)
-        drivers.append(driver)
+        scraper = Scraper()
+        result = scraper.scrape_navershopping(keywords)
         return result
     except Exception as e:
-        scraper.driver = SeleniumDriver().restart_driver(scraper.driver)
-        result, driver = scraper.scrape_naver(keyword=keywords, delay=0.5)
-        drivers.append(driver)
-        return result
+        traceback.print_exc()
+        print(f'naver_shopping_task error: {e}')
     finally:
-        # if response_count > 30:
-        #     scraper.driver = SeleniumDriver().restart_driver(scraper.driver)
-        #     response_count = 0
-        #     drivers.append(scraper.driver)
-        pass
+        scraper.driver.quit()
 
 @app.get("/search/navershopping")
-async def search_navershopping(keywords: str):
+async def search_naver_shopping(keywords: str):
     try:
-        global response_count
-        if not keywords:
-            raise HTTPException(status_code=400, detail="No keywords provided")
+        loop = asyncio.get_event_loop()
         keywords = unquote(keywords, encoding='utf-8')
-        driver = await get_driver()
-        scraper = Scraper(driver=driver)
+        result = await loop.run_in_executor(executor, naver_shopping_task, keywords)
 
-        return await shopping_task(keywords, scraper=scraper)
-    except Exception as e:
-        try:
-            driver = None
-            scraper = None
-            time.sleep(3)
-            driver = await get_driver()
-            scraper = Scraper(driver=driver)
-            result = await shopping_task(keywords, scraper=scraper)
-        except Exception as e:
-            traceback.print_exc()
-            raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        drivers.append(driver)
-
-async def shopping_task(keywords:str, scraper: Scraper):
-    global response_count
-    try:
-        response_count += 1
-        result, driver = scraper.scrape_navershopping(keyword=keywords, delay=0.5)
-        drivers.append(driver)
         return result
+    except RequestException:
+        asyncio.sleep(3)
+        result = await search_naver_shopping(keywords)
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        # if response_count > 30:
-        #     scraper.driver =SeleniumDriver().restart_driver(scraper.driver)
-        #     response_count = 0
-        #     driver = scraper.driver
-        pass
