@@ -11,9 +11,9 @@ import json
 
 
 class Scraper:
-  def __init__(self, driver : Chrome = None):
+  def __init__(self):
     # Initialize any necessary variables or objects here
-    self.driver = driver
+    self.driver = SeleniumDriver().set_up()
     self.retry = 0
     pass
 
@@ -59,7 +59,7 @@ class Scraper:
     }
     json_data = json.dumps(data, ensure_ascii=False)
     print(json_data)
-    return json_data, self.driver
+    return json_data
 
   def scrape_navershopping(self, keyword:str, delay:float=0.25):
     url = f'https://msearch.shopping.naver.com/search/all?query={keyword}&prevQuery={keyword}'
@@ -120,7 +120,7 @@ class Scraper:
     json_data = json.dumps(data, ensure_ascii=False)
     print(json_data)
 
-    return json_data, self.driver
+    return json_data
 
 
 if __name__ == '__main__':
