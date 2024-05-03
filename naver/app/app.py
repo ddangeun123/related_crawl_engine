@@ -74,7 +74,7 @@ async def search_naver_shopping(keywords: str):
         return result
     except RequestException:
         asyncio.sleep(3)
-        result = await search_naver_shopping(keywords)
+        result = await loop.run_in_executor(executor, naver_shopping_task, keywords)
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
