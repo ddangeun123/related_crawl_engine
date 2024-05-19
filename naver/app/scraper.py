@@ -35,7 +35,7 @@ class Scraper:
     except TimeoutException:
       self.driver.refresh()
       self.retry += 1
-      if self.retry < 2:
+      if self.retry < 1:
         self.driver = SeleniumDriver().restart_driver(self.driver)
         return self.scrape_naver(keyword=keyword, delay=delay)
       else:
@@ -46,7 +46,7 @@ class Scraper:
         self.retry = 0
     except WebDriverException:
       self.retry += 1
-      if self.retry < 2:
+      if self.retry < 1:
         self.driver = SeleniumDriver().restart_driver(self.driver)
         return self.scrape_naver(keyword=keyword, delay=delay)
       else:

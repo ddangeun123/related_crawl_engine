@@ -36,7 +36,7 @@ class SeleniumDriver:
 
     def restart_driver(self, driver):
         driver.quit()
-        time.sleep(2.5)
+        time.sleep(0.5)
         driver = SeleniumDriver().set_up()
         return driver
 
