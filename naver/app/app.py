@@ -71,7 +71,7 @@ def naver_shopping_task(keywords: str):
         scraper = Scraper()
         get_enable_pid(scraper.driver)
         result = scraper.scrape_navershopping(keywords)
-        remove_enable_pid(scraper.driver)
+        
         return result
     except Exception as e:
         traceback.print_exc()
@@ -79,6 +79,7 @@ def naver_shopping_task(keywords: str):
     finally:
         if scraper.driver != None:
             scraper.driver.quit()
+        remove_enable_pid(scraper.driver)
         chrome_manage(cur_os)
 
 @app.get("/search/navershopping")
@@ -102,7 +103,8 @@ def get_enable_pid(driver):
     enable_chromes.append(pid)
 def remove_enable_pid(driver):
     pid = driver.service.process.pid
-    enable_chromes.remove(pid)
+    if pid in enable_chromes:
+        enable_chromes.remove(pid)
     
 def chrome_manage(os:str):
     if os == 'Windows':
