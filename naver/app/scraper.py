@@ -36,6 +36,7 @@ class Scraper:
       self.driver.refresh()
       self.retry += 1
       if self.retry < 2:
+        self.driver = SeleniumDriver().restart_driver(self.driver)
         return self.scrape_naver(keyword=keyword, delay=delay)
       else:
         result = '관련검색어가 없습니다.'
@@ -46,6 +47,7 @@ class Scraper:
     except WebDriverException:
       self.retry += 1
       if self.retry < 2:
+        self.driver = SeleniumDriver().restart_driver(self.driver)
         return self.scrape_naver(keyword=keyword, delay=delay)
       else:
         result = '관련검색어가 없습니다.'
@@ -53,6 +55,8 @@ class Scraper:
         # 종료 함수 수정
         self.driver = SeleniumDriver().restart_driver(self.driver)
         self.retry = 0
+    finally:
+      self.driver.quit()
     data = {
         'keyword': keyword,
         'result': result,

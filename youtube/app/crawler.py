@@ -163,7 +163,12 @@ class Crawler:
                     
                     # comment
                     comment_response = self._api_detail_comment(self.api_key)
-                    token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+                    token = comment_response['contents']['twoColumnWatchNextResults']
+                    ['results']['results']
+                    ['contents'][3]
+                    ['itemSectionRenderer']['contents'][0]
+                    ['continuationItemRenderer']['continuationEndpoint']
+                    ['continuationCommand']['token']
                     self.comment_json = {
                         'context':self.detail_json['context'],
                         'continuation':token
@@ -334,7 +339,11 @@ class Crawler:
                             comments = []
                             for i in range(0, comment_limit):
                                 try:
-                                    comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
+                                    comment = comments_res['onResponseReceivedEndpoints'][1][
+                                        'reloadContinuationItemsCommand'
+                                        ]['continuationItems'][i][
+                                            'commentThreadRenderer'
+                                            ]['comment']['commentRenderer']
                                     author = comment['authorText']['simpleText']
                                     text = comment['contentText']['runs'][0]['text']
                                     comments.append({
