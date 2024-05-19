@@ -88,31 +88,17 @@ class Scraper:
         'result': result,
       }
     except TimeoutException:
-      self.retry += 1
-      if self.retry < 2:
-        return self.scrape_navershopping(keyword=keyword, delay=delay)
-      else:
-        result = '관련검색어가 없습니다.'
-        data = {
-            'keyword': keyword,
-            'result': result,
-        }
-
-        # 종료 함수 수정
-        self.driver = SeleniumDriver().restart_driver(self.driver)
-        self.retry = 0
+      result = '관련검색어가 없습니다.'
+      data = {
+          'keyword': keyword,
+          'result': result,
+      }
     except WebDriverException:
-      self.retry += 1
-      if self.retry < 2:
-          return self.scrape_navershopping(keyword=keyword, delay=delay)
-      else:
-        result = '관련검색어가 없습니다.'
-        data = {
-            'keyword': keyword,
-            'result': result,
-        }
-        self.driver = SeleniumDriver().restart_driver(self.driver)
-        self.retry = 0
+      result = '관련검색어가 없습니다.'
+      data = {
+          'keyword': keyword,
+          'result': result,
+      }
 
     except Exception as e:
       print(e)
@@ -120,7 +106,6 @@ class Scraper:
           'keyword': keyword,
           'result': '관련 검색어가 없습니다.',
       }
-      self.driver = SeleniumDriver().restart_driver(self.driver)
     json_data = json.dumps(data, ensure_ascii=False)
     print(json_data)
 
