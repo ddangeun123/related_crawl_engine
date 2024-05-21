@@ -20,8 +20,7 @@ class SeleniumDriver:
         options.add_argument('--disable-geolocation')
         self.driver = webdriver.Chrome(options=options)
 
-        self.driver.get("https://m.naver.com/")
-        # self.driver.get('https://shopping.naver.com/home')
+        self.driver.get('https://www.youtube.com/')
         return self.driver
 
     def health_check(self):
@@ -36,7 +35,7 @@ class SeleniumDriver:
 
     def restart_driver(self, driver):
         driver.quit()
-        time.sleep(0.5)
+        time.sleep(2.5)
         driver = SeleniumDriver().set_up()
         return driver
 

@@ -67,6 +67,7 @@ class Scraper:
 
   def scrape_navershopping(self, keyword:str, delay:float=0.25):
     url = f'https://msearch.shopping.naver.com/search/all?query={keyword}&prevQuery={keyword}'
+    # https://m.search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=%EB%96%A1%EB%B3%B6%EC%9D%B4
     self.driver.get(url=url)
     time.sleep(delay)
     wait = WebDriverWait(self.driver, 10)
@@ -110,6 +111,31 @@ class Scraper:
     print(json_data)
 
     return json_data
+  
+  def scrape_naver_shop_keyword(self, keywords:str, delay:float=0.25):
+    url = f'https://m.search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query={keywords}'
+    self.driver.get(url=url)
+
+    soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+    try:
+      result = '관련 검색어가 없습니다.'
+      items = soup.find_all(class_='keyword_item')
+      result = [item.text for item in items]
+      data = {
+          'keyword': keywords,
+          'result': result,
+      }
+      return data
+    except Exception as e:
+      print(e)
+      data = {
+          'keyword': keywords,
+          'result': '관련 검색어가 없습니다.',
+      }
+      return data
+    finally:
+      self.driver.quit()
+
 
 
 if __name__ == '__main__':
