@@ -42,8 +42,9 @@ async def log_requests(request, call_next):
     start_time = time.time()
     logging.info(f"Incoming request: {request.method} {request.url} from IP: {ip_address} at {request_time}")
     response = await call_next(request)
-    duration_time = time.time()
-    logging.info(f"{request.method} {request.url} from IP : {ip_address} at Outgoing response: {response.status_code} Duration : {duration_time}")
+    end_time = time.time()
+    duration_time = round(end_time - start_time, 2)  # 소수점 두 자리까지 반올림
+    logging.info(f"{request.method} {request.url} from IP : {ip_address} at Outgoing response: {response.status_code} Duration : {duration_time} seconds")
     return response
 
 def naver_task(keywords: str):
