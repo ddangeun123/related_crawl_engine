@@ -14,7 +14,6 @@ import traceback
 from requests.exceptions import RequestException
 
 from scraper import Scraper
-from fastapi.responses import _StreamingResponse
 
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=4)
@@ -35,10 +34,7 @@ async def log_requests(request, call_next):
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logging.info(f"Incoming request: {request.method} {request.url} from IP: {ip_address} at {time}")
     response = await call_next(request)
-    if not isinstance(response, _StreamingResponse):
-        logging.info(f"Outgoing response: {response.status_code} with content: {response.body}")
-    else:
-        logging.info(f"Outgoing response: {response.status_code}")
+    logging.info(f"Outgoing response: {response.status_code}")
     return response
 
 def naver_task(keywords: str):
