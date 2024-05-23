@@ -6,6 +6,7 @@ import subprocess
 import platform
 import logging
 from datetime import datetime
+import time
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -37,9 +38,9 @@ enable_chromes = []
 @app.middleware("http")
 async def log_requests(request, call_next):
     ip_address = request.client.host
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    request_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     start_time = time.time()
-    logging.info(f"Incoming request: {request.method} {request.url} from IP: {ip_address} at {time}")
+    logging.info(f"Incoming request: {request.method} {request.url} from IP: {ip_address} at {request_time}")
     response = await call_next(request)
     duration_time = time.time()
     logging.info(f"{request.method} {request.url} from IP : {ip_address} at Outgoing response: {response.status_code} Duration : {duration_time}")
