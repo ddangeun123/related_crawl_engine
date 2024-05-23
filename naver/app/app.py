@@ -38,9 +38,11 @@ enable_chromes = []
 async def log_requests(request, call_next):
     ip_address = request.client.host
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    start_time = time.time()
     logging.info(f"Incoming request: {request.method} {request.url} from IP: {ip_address} at {time}")
     response = await call_next(request)
-    logging.info(f"Outgoing response: {response.status_code}")
+    duration_time = time.time()
+    logging.info(f"{request.method} {request.url} from IP : {ip_address} at Outgoing response: {response.status_code} Duration : {duration_time}")
     return response
 
 def naver_task(keywords: str):
