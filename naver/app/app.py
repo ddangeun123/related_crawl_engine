@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 from urllib.parse import unquote
 import subprocess
 import platform
+import logging
+from datetime import datetime
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -26,18 +28,14 @@ def get_os_info():
 cur_os = get_os_info()
 enable_chromes = []
 
-def fetch(url):
-    driver = webdriver.Chrome()
-    driver.get(url)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    driver.quit()
-    return str(soup)
-
-@app.get("/crawl/")
-async def read_root(url: str):
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(executor, fetch, url)
-    return {"html": result}
+@app.middleware("http")
+async def log_requests(request, call_next):
+    ip_address = request.client.host
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logging.info(f"Incoming request: {request.method} {request.url} from IP: {ip_address} at {time}")
+    response = await call_next(request)
+    logging.info(f"Outgoing response: {response.status_code} with content: {response.body}")
+    return response
 
 def naver_task(keywords: str):
     try:
@@ -70,8 +68,6 @@ def naver_shopping_task(keywords: str):
     try:
         scraper = Scraper()
         get_enable_pid(scraper.driver)
-        result = scraper.scrape_navershopping(keywords)
-        
         # result = scraper.scrape_navershopping(keywords)
         result = scraper.scrape_naver_shop_keyword(keywords)
         return result
