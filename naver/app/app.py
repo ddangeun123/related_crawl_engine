@@ -122,7 +122,7 @@ def chrome_manage(os:str):
         for pid in kill_pids:
             subprocess.call('taskkill /F /PID {}'.format(pid), shell=True)
     elif os == 'Linux' or os == 'Mac':
-        list_command = 'pgrep -f "Google Chrome"'
+        list_command = 'pgrep -f "chrome"'
         process = subprocess.Popen(list_command, shell=True, stdout=subprocess.PIPE)
         output = process.communicate()[0].decode('utf-8')
         current_pids = output.strip().split('\n')

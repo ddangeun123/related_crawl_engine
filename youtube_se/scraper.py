@@ -49,23 +49,28 @@ class Scraper:
         driver = self.driver
         driver.get(url)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'above-the-fold')))
+        expand_button = driver.find_element(By.ID, 'expand-sizer')
+        ActionChains(driver).move_to_element(expand_button).click().perform()
         time.sleep(1)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        description = soup.find(id='snippet').text
+        description = soup.find(id='description-inline-expander').text
+        info_container = soup.find(id='info-contents')
+        info_ele = info_container.find(id='info')
+        auto_eles = info_ele.find_all(dir='auto')
+        # viewCount = auto_eles[0].text.split('조회수 ')[1].split('회')[0]
+        # publishDate = self.parse_datetime(auto_eles[2].text)
         videoid = driver.current_url.split('v=')[1]
         title = driver.title.split(' - YouTube')[0]
-        description = driver.find_element(By.ID, 'description').text
-        viewCount = driver.find_element(By.ID, 'tooltip').text.split('조회수 ')[1].split('회')[0]
-        author = driver.find_element(By.ID, 'channel-name').text
-        publishDate = driver.find_element(By.ID, 'tooltip').text
-        publishDate = self.parse_datetime(publishDate)
+        author = soup.find(id='upload-info').text
+        
+        # publishDate = self.parse_datetime(publishDate)
         result = {
                     "VideoID": videoid,
                     "title": title,
                     "description": description,
-                    "viewCount": viewCount,
+                    # "viewCount": viewCount,
                     "author": author,
-                    "publishDate": publishDate,
+                    # "publishDate": publishDate,
                     # "comments":{
                     #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
                     #     "comments":comments
@@ -76,7 +81,6 @@ class Scraper:
         self.scroll_position += 700
         driver.execute_script(f"window.scrollTo(0, {self.scroll_position})")
     def parse_datetime(self, date_str:str):
-        date_str = date_str.split('• ')[1].strip()  # '2021. 2. 28.' 추출
         date_str = date_str.replace('.', '').strip()  # '2021 2 28' 변환
         year, month, day = map(int, date_str.split())  # 각 부분을 정수로 변환
 
