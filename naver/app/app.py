@@ -48,8 +48,10 @@ def naver_task(keywords: str):
         traceback.print_exc()
         print(f'naver_task error: {e}')
     finally:
-        if scraper.driver != None:
-            scraper.driver.quit()
+    #     if scraper.driver != None:
+    #         scraper.driver.quit()
+        remove_enable_pid(scraper.driver)
+        chrome_manage(cur_os)
 
 @app.get("/search/naver")
 async def search_naver(keywords: str):
@@ -77,8 +79,8 @@ def naver_shopping_task(keywords: str):
         traceback.print_exc()
         print(f'naver_shopping_task error: {e}')
     finally:
-        if scraper.driver != None:
-            scraper.driver.quit()
+        # if scraper.driver != None:
+        #     scraper.driver.quit()
         remove_enable_pid(scraper.driver)
         chrome_manage(cur_os)
 
