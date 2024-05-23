@@ -15,6 +15,8 @@ from requests.exceptions import RequestException
 
 from scraper import Scraper
 
+logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=4)
 def get_os_info():
