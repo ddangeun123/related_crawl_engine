@@ -20,7 +20,7 @@ from scraper import Scraper
 current_date = datetime.now().strftime('%Y-%m-%d')
 # 로그 파일 이름을 설정합니다.
 log_filename = f'app-{current_date}.log'
-logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(filename=log_filename, filemode='w', format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=4)
