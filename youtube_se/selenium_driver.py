@@ -9,7 +9,6 @@ class SeleniumDriver:
     def set_up(self):
         options = Options()
         # options.add_argument('--headless')
-        # options.add_argument(f'--port={port}')
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-infobars')
         options.add_argument('--no-sandbox')
