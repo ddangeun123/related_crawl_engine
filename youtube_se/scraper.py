@@ -41,34 +41,27 @@ class Scraper:
             if url == None:
                 continue
             if 'shorts' in url:
-                retry = 0
                 try:
                     result = self.get_shorts_detail(url)
                     results.append(result)
                 except TimeoutException:
-                    if retry > 2:
-                        print('TimeoutException')
-                        break
-                    retry += 1
-                    result = self.get_shorts_detail(url)
-                    results.append(result)
+                    print('TimeoutException')
+                    continue
                 except Exception as e:
                     print(f'Error: {e}')
                     traceback.print_exc()
+                    continue
             elif 'watch' in url:
                 try:
                     result = self.get_video_detail(url)
                     results.append(result)
                 except TimeoutException:
-                    if retry > 2:
-                        print('TimeoutException')
-                        break
-                    retry += 1
-                    result = self.get_video_detail(url)
-                    results.append(result)
+                    print('TimeoutException')
+                    continue
                 except Exception as e:
                     print(f'Error: {e}')
                     traceback.print_exc()
+                    continue
             else:
                 pass
         return results
@@ -173,11 +166,14 @@ class Scraper:
         self.scroll_position += 700
         driver.execute_script(f"window.scrollTo(0, {self.scroll_position})")
     def parse_datetime(self, date_str:str):
-        date_str = date_str.replace('.', '').strip()  # '2021 2 28' 변환
-        year, month, day = map(int, date_str.split())  # 각 부분을 정수로 변환
+        try:
+            date_str = date_str.replace('.', '').strip()  # '2021 2 28' 변환
+            year, month, day = map(int, date_str.split())  # 각 부분을 정수로 변환
 
-        date = datetime.datetime(year, month, day)  # datetime 객체 생성
-        return date
+            date = datetime.datetime(year, month, day)  # datetime 객체 생성
+            return date
+        except:
+            return "0000-00-00"
     def parse_shorts_datetime(self, date_str:str):
         try:
             # 문자열을 개행 문자를 기준으로 분할
@@ -200,4 +196,13 @@ if __name__ == "__main__":
     scraper.scrape_youtube('검은콩')
     # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/EM82-sveZCc'))
     # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/9sCO-7mJZzM'))
+    # 비디오 에러
+    # 비디오 더보기 안눌러짐 (headless모드)
+    
+    # 쇼츠 에러 다른 버튼 클릭 url
+    # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/F6Sep9-cWaM'))
+    # 쇼츠 조회수가 아닌 좋아요 수로 나옴
+    # 쇼츠 날짜 표기 다른 형식
+    
+    
     
