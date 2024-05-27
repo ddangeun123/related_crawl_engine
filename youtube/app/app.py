@@ -18,7 +18,7 @@ def youtube_task(keyword:str, limit:int):
             'keyword':keyword,
             'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
         }
-        print(f'{index}   {data}')
+        # print(f'{index}   {data}')
         result.append(data)
     if len(result) == 0 :
         for index, keyword in enumerate(keyword):

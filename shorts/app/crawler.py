@@ -171,34 +171,34 @@ class Crawler:
                             response = self._api_detail_page(self.api_key)
                             
                             # comment
-                            comment_response = self._api_detail_comment(self.api_key)
-                            token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
-                            self.comment_json = {
-                                'context':self.detail_json['context'],
-                                'continuation':token
-                            }
-                            comments_res = self._api_comments(self.api_key)
-                            comment_limit = 10
-                            try:
-                                comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
-                                if comment_count<=10:
-                                    comment_limit = comment_count
-                            except:
-                                comment_count = 0
-                                comment_limit = 0
-                            comments = []
-                            for i in range(0, comment_limit):
-                                try:
-                                    comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
-                                    author = comment['authorText']['simpleText']
-                                    text = comment['contentText']['runs'][0]['text']
-                                    comments.append({
-                                        'author':author,
-                                        'text':text,
-                                    })
-                                except Exception as e:
-                                    print(e)
-                                    continue
+                            # comment_response = self._api_detail_comment(self.api_key)
+                            # token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+                            # self.comment_json = {
+                            #     'context':self.detail_json['context'],
+                            #     'continuation':token
+                            # }
+                            # comments_res = self._api_comments(self.api_key)
+                            # comment_limit = 10
+                            # try:
+                            #     comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
+                            #     if comment_count<=10:
+                            #         comment_limit = comment_count
+                            # except:
+                            #     comment_count = 0
+                            #     comment_limit = 0
+                            # comments = []
+                            # for i in range(0, comment_limit):
+                            #     try:
+                            #         comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
+                            #         author = comment['authorText']['simpleText']
+                            #         text = comment['contentText']['runs'][0]['text']
+                            #         comments.append({
+                            #             'author':author,
+                            #             'text':text,
+                            #         })
+                            #     except Exception as e:
+                            #         print(e)
+                            #         continue
                             if comment_count != 0 or len(comments) <= 0:
                                 result.append(
                                     {
@@ -212,10 +212,10 @@ class Crawler:
                                         "publishDate": response["microformat"][
                                             "playerMicroformatRenderer"
                                         ]["publishDate"],
-                                        "comments":{
-                                            "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
-                                            "comments":comments
-                                        }
+                                        # "comments":{
+                                        #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                                        #     "comments":comments
+                                        # }
                                     }
                                 )
                             else:
@@ -231,10 +231,10 @@ class Crawler:
                                         "publishDate": response["microformat"][
                                             "playerMicroformatRenderer"
                                         ]["publishDate"],
-                                        "comments":{
-                                            "count":0,
-                                            "comments":comments
-                                        }
+                                        # "comments":{
+                                        #     "count":0,
+                                        #     "comments":comments
+                                        # }
                                     }
                                 )
                             print(result[-1])
@@ -331,73 +331,74 @@ class Crawler:
                             response = self._api_detail_page(self.api_key)
                             
                             # comment
-                            comment_response = self._api_detail_comment(self.api_key)
-                            token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
-                            self.comment_json = {
-                                'context':self.detail_json['context'],
-                                'continuation':token
-                            }
-                            comments_res = self._api_comments(self.api_key)
-                            comment_limit = 10
-                            try:
-                                comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
-                                if comment_count<=10:
-                                    comment_limit = comment_count
-                            except:
-                                comment_count = 0
-                                comment_limit = 0
-                            comments = []
-                            for i in range(0, comment_limit):
-                                try:
-                                    comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
-                                    author = comment['authorText']['simpleText']
-                                    text = comment['contentText']['runs'][0]['text']
-                                    comments.append({
-                                        'author':author,
-                                        'text':text,
-                                    })
-                                except Exception as e:
-                                    print(e)
-                                    continue
-                            if comment_count != 0:
-                                result.append(
-                                    {
-                                        "VideoID": self.detail_json["videoId"],
-                                        "title": f'#shorts {response["videoDetails"]["title"]}',
-                                        "description": f'#shorts {response["videoDetails"]["shortDescription"]}',
-                                        "viewCount": 0,
-                                        "author": response["videoDetails"][
-                                            "author"
-                                            ],
-                                        "publishDate": response["microformat"][
-                                            "playerMicroformatRenderer"
-                                        ]["publishDate"],
-                                        "comments":{
-                                            "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
-                                            "comments":comments
-                                        }
-                                    }
-                                )
-                            else:
-                                result.append(
-                                    {
-                                        "VideoID": self.detail_json["videoId"],
-                                        "title": f'#shorts {response["videoDetails"]["title"]}',
-                                        "description": f'#shorts {response["videoDetails"]["shortDescription"]}',
-                                        "viewCount": 0,
-                                        "author": response["videoDetails"][
-                                            "author"
-                                            ],
-                                        "publishDate": response["microformat"][
-                                            "playerMicroformatRenderer"
-                                        ]["publishDate"],
-                                        "comments":{
-                                            "count":0,
-                                            "comments":comments
-                                        }
-                                    }
-                                )
-                            print(result[-1])
+                            # comment_response = self._api_detail_comment(self.api_key)
+                            # token = comment_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][3]['itemSectionRenderer']['contents'][0]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+                            # self.comment_json = {
+                            #     'context':self.detail_json['context'],
+                            #     'continuation':token
+                            # }
+                            # comments_res = self._api_comments(self.api_key)
+                            # comment_limit = 10
+                            # try:
+                            #     comment_count = len(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'])
+                            #     if comment_count<=10:
+                            #         comment_limit = comment_count
+                            # except:
+                            #     comment_count = 0
+                            #     comment_limit = 0
+                            # comments = []
+                            # for i in range(0, comment_limit):
+                            #     try:
+                            #         comment = comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand']['continuationItems'][i]['commentThreadRenderer']['comment']['commentRenderer']
+                            #         author = comment['authorText']['simpleText']
+                            #         text = comment['contentText']['runs'][0]['text']
+                            #         comments.append({
+                            #             'author':author,
+                            #             'text':text,
+                            #         })
+                            #     except Exception as e:
+                            #         print(e)
+                            #         continue
+                            # if comment_count != 0:
+                            result.append(
+                                {
+                                    "VideoID": self.detail_json["videoId"],
+                                    "title": f'#shorts {response["videoDetails"]["title"]}',
+                                    "description": f'#shorts {response["videoDetails"]["shortDescription"]}',
+                                    "viewCount": 0,
+                                    "author": response["videoDetails"][
+                                        "author"
+                                        ],
+                                    "publishDate": response["microformat"][
+                                        "playerMicroformatRenderer"
+                                    ]["publishDate"],
+                                    # "comments":{
+                                    #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                                    #     "comments":comments
+                                    # }
+                                }
+                            )
+                            # else:
+                            #     result.append(
+                            #         {
+                            #             "VideoID": self.detail_json["videoId"],
+                            #             "title": f'#shorts {response["videoDetails"]["title"]}',
+                            #             "description": f'#shorts {response["videoDetails"]["shortDescription"]}',
+                            #             "viewCount": 0,
+                            #             "author": response["videoDetails"][
+                            #                 "author"
+                            #                 ],
+                            #             "publishDate": response["microformat"][
+                            #                 "playerMicroformatRenderer"
+                            #             ]["publishDate"],
+                            #             # "comments":{
+                            #             #     "count":0,
+                            #             #     "comments":comments
+                            #             # }
+                            #         }
+                            #     )
+                            # print(result[-1])
+                            print(response["videoDetails"]["title"])
                         except Exception as e:
                             print("비디오 정보 수집 에러 or 쇼츠 영상", e)
                             continue
@@ -430,10 +431,10 @@ class Crawler:
                                 "publishDate": response["microformat"][
                                     "playerMicroformatRenderer"
                                 ]["publishDate"],
-                                "comments":{
-                                    "count":comments_count,
-                                    "comments":comments
-                                    }
+                                # "comments":{
+                                #     "count":comments_count,
+                                #     "comments":comments
+                                #     }
                                 }
                             )
                         else:
@@ -474,16 +475,17 @@ class Crawler:
                                 "publishDate": response["microformat"][
                                     "playerMicroformatRenderer"
                                 ]["publishDate"],
-                                "comments":{
-                                    "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
-                                    "comments":comments
-                                }
+                                # "comments":{
+                                #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                                #     "comments":comments
+                                # }
                             })
-                        print(result[-1])
+                        # print(result[-1])
+                        print(response["videoDetails"]["title"])
                     except Exception as e:
                         print("댓글 정지 or 댓글 오류", e)
                         traceback.print_exc()
-                        print(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand'])
+                        # print(comments_res['onResponseReceivedEndpoints'][1]['reloadContinuationItemsCommand'])
                         result.append(
                         {
                             "VideoID": self.detail_json["videoId"],
@@ -496,10 +498,10 @@ class Crawler:
                             "publishDate": response["microformat"][
                                 "playerMicroformatRenderer"
                             ]["publishDate"],
-                            "comments":{
-                                "count":"0",
-                                "comments":[]
-                            }
+                            # "comments":{
+                            #     "count":"0",
+                            #     "comments":[]
+                            # }
                         })
                     finally:
                         limit_count -= 1

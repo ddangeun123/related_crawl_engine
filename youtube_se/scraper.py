@@ -26,16 +26,20 @@ class Scraper:
         driver = self.driver
         driver.get(f'https://www.youtube.com/results?search_query={query}')
         thumbnails = []
-        while len(thumbnails) < limit:
+        urls = []
+        while len(urls) < limit:
             try:
                 self.scroll_down(driver)
                 wait = WebDriverWait(driver, 10)
                 wait.until(EC.presence_of_all_elements_located((By.ID, 'thumbnail')))
                 thumbnails = driver.find_elements(By.ID, 'thumbnail')
+                hrefs = [thumbnail.get_attribute('href') for thumbnail in thumbnails]
+                urls = [url for url in hrefs if url is not None and ('shorts' in url or 'watch' in url)]
+                urls = set(urls)
             except TimeoutException:
                 print('TimeoutException')
-        hrefs = [thumbnail.get_attribute('href') for thumbnail in thumbnails]
-        print(f'{len(hrefs)} 개 url 수집')
+        
+        print(f'{len(urls)} 개 url 수집')
         results = []
         for url in hrefs:
             if url == None:
@@ -45,7 +49,22 @@ class Scraper:
                     result = self.get_shorts_detail(url)
                     results.append(result)
                 except TimeoutException:
-                    print('TimeoutException')
+                    print(url, 'TimeoutException')
+                    self.driver.refresh()
+                    try:
+                        result = self.get_shorts_detail(url)
+                    except:
+                        result = {
+                            "VideoID"        : url.split('shorts/')[1],
+                            "title"          : '',
+                            "description"    : '',
+                            "viewCount"      : '',
+                            "author"         : '',
+                            "publishDate"    : '',
+                            "Error"          : 'TimeoutException'
+                        }
+                        results.append(result)
+                        pass
                     continue
                 except Exception as e:
                     print(f'Error: {e}')
@@ -56,7 +75,22 @@ class Scraper:
                     result = self.get_video_detail(url)
                     results.append(result)
                 except TimeoutException:
-                    print('TimeoutException')
+                    print(url, 'TimeoutException')
+                    self.driver.refresh()
+                    try:
+                        result = self.get_video_detail(url)
+                    except:
+                        result = {
+                            "VideoID"        : url.split('v=')[1],
+                            "title"          : '',
+                            "description"    : '',
+                            "viewCount"      : '',
+                            "author"         : '',
+                            "publishDate"    : '',
+                            "Error"          : 'TimeoutException'
+                        }
+                        results.append(result)
+                        pass
                     continue
                 except Exception as e:
                     print(f'Error: {e}')
@@ -70,24 +104,21 @@ class Scraper:
         driver = self.driver
         driver.get(url)
         wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_element_located((By.ID, 'above-the-fold')))
-        try:
-            expand_button = driver.find_element(By.ID, 'expand-sizer')
-            ActionChains(driver).move_to_element(expand_button).click().perform()
-        except:
-            traceback.print_exc()
+        wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
         
-        wait.until(EC.presence_of_element_located((By.ID, 'description-inline-expander')))
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        description = soup.find(id='description-inline-expander').text
-        info_container = soup.find(id='info-contents')
-        info_ele = info_container.find(id='info')
-        view_count = info_ele.find(class_='view-count').text.split('조회수 ')[1].split('회')[0]
-        publish_date = self.parse_datetime(info_ele.find(id='info-strings').text)
-        
+
+        micro_format = soup.find(id='microformat')
+        script_ele = micro_format.find('script', {'type':'application/ld+json'})
+        json_text = script_ele.string
+        json_data = json.loads(json_text)
+        description = json_data.get("description", "No description found")
+        view_count = json_data.get("interactionCount", "No view count found")
+        title = json_data.get("name", "No title found")
+        publish_date = json_data.get("uploadDate", "No publish date found")
+        author = json_data.get("author", "No author found")
+
         videoid = driver.current_url.split('v=')[1]
-        title = driver.title.split(' - YouTube')[0]
-        author = soup.find(id='upload-info').text
         
         result = {
                     "VideoID"        : videoid,
@@ -111,41 +142,15 @@ class Scraper:
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.ID, 'menu-button')))
 
-        menu_button = driver.find_element(By.ID, 'menu-button')
-        ActionChains(driver).move_to_element(menu_button).click().perform()
-        content_wrapper = driver.find_element(By.ID, 'contentWrapper')
-
-        wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="items"]/ytd-menu-service-item-renderer')))
-        info_button = content_wrapper.find_element(By.XPATH, '//*[@id="items"]/ytd-menu-service-item-renderer')
-        ActionChains(driver).move_to_element(info_button).click().perform()
-
-        wait.until(EC.presence_of_element_located((By.ID, 'watch-while-engagement-panel')))
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        soup.find(id='watch-while-engagement-panel')
-
-        try:
-            more_button = soup.find(id='more-button')
-            ActionChains(driver).move_to_element(more_button).click().perform()
-        except:
-            pass
-
-        info = driver.find_element(By.ID, 'factoids')
-        videoid = driver.current_url.split('shorts/')[1]
-        view_count = info.find_element(By.CLASS_NAME, 'YtwFactoidRendererValue').text
-        publish_date = self.parse_shorts_datetime(info.find_elements(By.CLASS_NAME, 'YtwFactoidRendererHost')[2].text)
-        descript_window = driver.find_elements(By.TAG_NAME, 'ytd-engagement-panel-section-list-renderer')[1]
-        try:
-            description = descript_window.find_element(By.ID, 'description').text
-        except:
-            pass
-        exit_button = descript_window.find_element(By.ID, 'visibility-button')
-        ActionChains(driver).move_to_element(exit_button).click().perform()
-
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'metadata-container')))
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        meta_data = soup.find(class_='metadata-container')
-        author = meta_data.find(id='channel-name').text
-        title = meta_data.find(class_='title').text
+        
+        video_obj = soup.find(id='watch7-content')
+        videoid = video_obj.find('meta', {'itemprop':'identifier'})['content']
+        title = video_obj.find('meta', {'itemprop':'name'})['content']
+        description = video_obj.find('meta', {'itemprop':'description'})['content']
+        author = video_obj.find('span', {'itemprop':'author'}).find('link', {'itemprop':'name'})['content']
+        view_count = video_obj.find('meta', {'itemprop':'interactionCount'})['content']
+        publish_date = video_obj.find('meta', {'itemprop':'uploadDate'})['content']
 
         result = {
                     "VideoID"        : videoid,
@@ -170,10 +175,45 @@ class Scraper:
             date_str = date_str.replace('.', '').strip()  # '2021 2 28' 변환
             year, month, day = map(int, date_str.split())  # 각 부분을 정수로 변환
 
-            date = datetime.datetime(year, month, day)  # datetime 객체 생성
+            date = f"{year}-{month:02d}-{day:02d}"  # 문자열 포맷팅을 사용하여 날짜 생성
             return date
         except:
             return "0000-00-00"
+    def convert_korean_date_to_iso(self, date_string):
+        # 특수문자와 공백, 개행 문자 제거
+        clean_string = re.sub(r'[\s\n\t\r]+', ' ', date_string)  # 공백으로 변환
+        clean_string = re.sub(r'[^0-9년월일\s]', '', clean_string)  # 숫자와 년월일, 공백 제외하고 제거
+
+        # 다양한 날짜 패턴
+        patterns = [
+            re.compile(r'(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일'),  # YYYY년 MM월 DD일
+            re.compile(r'(\d{1,2})\s*월\s*(\d{1,2})\s*일\s*(\d{4})\s*년'),  # MM월 DD일 YYYY년
+            re.compile(r'(\d{1,2})\s*일\s*(\d{1,2})\s*월\s*(\d{4})\s*년'),  # DD일 MM월 YYYY년
+            re.compile(r'(\d{4})\s*년\s*(\d{1,2})\s*일\s*(\d{1,2})\s*월'),  # YYYY년 DD일 MM월
+            re.compile(r'(\d{1,2})\s*월\s*(\d{4})\s*년\s*(\d{1,2})\s*일'),  # MM월 YYYY년 DD일
+            re.compile(r'(\d{1,2})\s*일\s*(\d{4})\s*년\s*(\d{1,2})\s*월')   # DD일 YYYY년 MM월
+        ]
+
+        for pattern in patterns:
+            match = pattern.search(clean_string)
+            if match:
+                parts = match.groups()
+                if '년' in clean_string and '월' in clean_string and '일' in clean_string:
+                    year, month, day = parts[0], parts[1], parts[2]
+                    if '월' in clean_string.split('년')[1]:  # YYYY년 MM월 DD일
+                        return f"{year}-{month}-{day}"
+                    elif '일' in clean_string.split('월')[1]:  # MM월 DD일 YYYY년
+                        return f"{parts[2]}-{parts[0]}-{parts[1]}"
+                    elif '년' in clean_string.split('월')[1]:  # MM월 YYYY년 DD일
+                        return f"{parts[1]}-{parts[0]}-{parts[2]}"
+                    elif '월' in clean_string.split('일')[1]:  # DD일 MM월 YYYY년
+                        return f"{parts[2]}-{parts[1]}-{parts[0]}"
+                    elif '일' in clean_string.split('년')[1]:  # YYYY년 DD일 MM월
+                        return f"{parts[0]}-{parts[2]}-{parts[1]}"
+                    elif '년' in clean_string.split('일')[1]:  # DD일 YYYY년 MM월
+                        return f"{parts[1]}-{parts[2]}-{parts[0]}"
+                break
+        return "0000-00-00"
     def parse_shorts_datetime(self, date_str:str):
         try:
             # 문자열을 개행 문자를 기준으로 분할
@@ -193,16 +233,21 @@ class Scraper:
 
 if __name__ == "__main__":
     scraper = Scraper()
-    scraper.scrape_youtube('검은콩')
+    result = scraper.scrape_youtube('검은콩', limit=100)
+    with open('result.json', 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=4)
     # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/EM82-sveZCc'))
     # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/9sCO-7mJZzM'))
     # 비디오 에러
-    # 비디오 더보기 안눌러짐 (headless모드)
+    # 비디오 더보기 안눌러짐 (headless모드)  해결
+    # scraper.get_video_detail('https://www.youtube.com/watch?v=1y4wwT69c80')
+
+    # Timeout 시 새로고침 해보기
     
     # 쇼츠 에러 다른 버튼 클릭 url
     # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/F6Sep9-cWaM'))
     # 쇼츠 조회수가 아닌 좋아요 수로 나옴
-    # 쇼츠 날짜 표기 다른 형식
+    # 쇼츠 날짜 표기 다른 형식   해결
     
     
     

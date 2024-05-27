@@ -19,6 +19,8 @@ class DriverManager:
     print(f"Current port: {port}")
 
     return int(port)
+  def quit_driver(self, driver):
+    driver.quit()
 
 if __name__ == "__main__":
   driver_manager = DriverManager()

@@ -36,19 +36,19 @@ class Scraper:
         succesed = False
 
     except TimeoutException:
+        try:
+            elements = wait.until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, 'b2Rnsc'))
+            )
+            result = []
+            for element in elements:
+                result.append(element.text)
+            succesed = True
+        except:
+            result = ['관련검색어가 없습니다.']
         print(f'{keyword} Timeout')
-        
-        if self.retry < 2:
-          self.driver.refresh()
-          self.retry += 1
-          return self.scrape_google(keyword=keyword, delay=delay)
-        else:
-          result = ['관련검색어가 없습니다.']
 
-          self.retry()
-          time.sleep(5)
-
-    except WebDriverException:
+    except WebDriverException:        
         print("WebDriverException")
         if self.retry < 2:
             return self.scrape_google(keyword=keyword, delay=delay)
@@ -68,6 +68,16 @@ class Scraper:
         }
         return json_result, succesed
     
-  def retry(self):
-      self.driver = self.driver_manager.restart_driver(self.driver)
-      self.retry = 0
+def retry(self):
+    self.driver = self.driver_manager.restart_driver(self.driver)
+    self.retry = 0
+
+if __name__ == '__main__':
+    # Test your scraper here
+    driver_manager = DriverManager()
+    driver = driver_manager.driver
+    scraper = Scraper(driver, driver_manager)
+    result, succesed = scraper.scrape_google('남자 패딩 사이즈')
+    print(result)
+    driver_manager.quit_driver(driver)
+
