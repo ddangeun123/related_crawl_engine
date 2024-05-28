@@ -141,6 +141,7 @@ class Scraper:
 if __name__ == '__main__':
   # Example usage:
   scraper = Scraper()
-  scraper.scrape_naver(keyword='제일기획', delay=0.5)
-  scraper.scrape_navershopping(keyword='제일기획', delay=0.5)
-  scraper.scrape_navershopping(keyword='초콜릿', delay=0.5)
+  # scraper.scrape_naver(keyword='제일기획', delay=0.5)
+  # scraper.scrape_navershopping(keyword='제일기획', delay=0.5)
+  # scraper.scrape_navershopping(keyword='초콜릿', delay=0.5)
+  print(scraper.scrape_naver_shop_keyword(keywords='갈비탕', delay=0.5))

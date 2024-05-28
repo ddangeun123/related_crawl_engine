@@ -22,12 +22,12 @@ class Scraper:
         self.scroll_position = 0
         pass
 
-    def scrape_youtube(self, query:str, limit:int = 250):
+    def scrape_youtube(self, query:str, limit:int = 100):
         driver = self.driver
         driver.get(f'https://www.youtube.com/results?search_query={query}')
         thumbnails = []
         urls = []
-        while len(urls) < limit:
+        while len(urls) < (limit * 1.3):
             try:
                 self.scroll_down(driver)
                 wait = WebDriverWait(driver, 10)
@@ -42,12 +42,15 @@ class Scraper:
         print(f'{len(urls)} 개 url 수집')
         results = []
         for url in hrefs:
+            if limit <= 0:
+                break
             if url == None:
                 continue
             if 'shorts' in url:
                 try:
                     result = self.get_shorts_detail(url)
                     results.append(result)
+                    limit -= 1
                 except TimeoutException:
                     print(url, 'TimeoutException')
                     self.driver.refresh()
@@ -64,6 +67,7 @@ class Scraper:
                             "Error"          : 'TimeoutException'
                         }
                         results.append(result)
+                        limit -= 1
                         pass
                     continue
                 except Exception as e:
@@ -90,6 +94,7 @@ class Scraper:
                             "Error"          : 'TimeoutException'
                         }
                         results.append(result)
+                        limit -= 1
                         pass
                     continue
                 except Exception as e:
@@ -233,7 +238,7 @@ class Scraper:
 
 if __name__ == "__main__":
     scraper = Scraper()
-    result = scraper.scrape_youtube('검은콩', limit=100)
+    result = scraper.scrape_youtube('검은콩', limit=10)
     with open('result.json', 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=4)
     # print(scraper.get_shorts_detail('https://www.youtube.com/shorts/EM82-sveZCc'))

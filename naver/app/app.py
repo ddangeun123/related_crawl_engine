@@ -100,8 +100,8 @@ def naver_shopping_task(keywords: str):
     try:
         scraper = Scraper()
         get_enable_pid(scraper.driver)
-        # result = scraper.scrape_navershopping(keywords)
-        result = scraper.scrape_naver_shop_keyword(keywords)
+        result = scraper.scrape_navershopping(keywords)
+        # result = scraper.scrape_naver_shop_keyword(keywords)
         return result
     except Exception as e:
         traceback.print_exc()
