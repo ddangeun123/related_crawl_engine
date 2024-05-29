@@ -114,19 +114,25 @@ def naver_shopping_task(keywords: str):
 
 @app.get("/search/navershopping")
 async def search_naver_shopping(keywords: str):
+    logger = logging.getLogger('uvicorn')
+    result = {
+        'keyword': keywords,
+        'result': '검색 결과가 없습니다.'
+    }
     try:
         loop = asyncio.get_event_loop()
         keywords = unquote(keywords, encoding='utf-8')
         result = await loop.run_in_executor(executor, naver_shopping_task, keywords)
-
-        return result
+        logger.info(f"keyword: {keywords} result: {result}")
     except RequestException:
         asyncio.sleep(3)
         result = await loop.run_in_executor(executor, naver_shopping_task, keywords)
-        return result
+        logger.warning(f"keyword: {keywords} result: {result} at RequestException")
     except Exception as e:
-        traceback.print_exc()
+        logger.error(f"Error: {e} keyword : {keywords} at traceback: {traceback.print_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        return result
 
 def get_enable_pid(driver):
     pid = driver.service.process.pid
