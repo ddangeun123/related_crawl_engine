@@ -1,17 +1,20 @@
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, WebDriverException, TimeoutException
 from selenium.webdriver.common.by import By
 
-from driver_manager import DriverManager
+from selenium_driver import SeleniumDriver
+
 import sys
 import time
+import traceback
 
 class Scraper:
-  def __init__(self, driver, driver_manager:DriverManager):
+  def __init__(self):
     # Initialize any necessary variables or objects here
-    self.driver = driver
-    self.driver_manager = driver_manager
+    driver_instance = SeleniumDriver()
+    self.driver = driver_instance.set_up()
     self.retry = 0
     pass
 
@@ -22,15 +25,19 @@ class Scraper:
     succesed = False
     wait = WebDriverWait(self.driver, 10)
     try:
-        elements = wait.until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, 's75CSd'))
-        )
-        # elements = self.driver.find_elements(By.CLASS_NAME, 's75CSd')
-        result = []
-        for element in elements:
-            result.append(element.text)
-        succesed = True
-                        
+        self.scroll_down(self.driver)
+        bot = wait.until(EC.presence_of_element_located((By.ID, 'botstuff')))
+        parents = self.driver.find_elements(By.CLASS_NAME, 'AJLUJb')
+        elements = []
+        for parent in parents:
+            temp_ele = parent.find_elements(By.CSS_SELECTOR, ':scope > div')
+            elements.extend(temp_ele)
+        if len(elements) != 0:
+            result = []
+            for element in elements:
+                result.append(element.text)
+            succesed = True
+
     except NoSuchElementException:
         result = ['관련검색어가 없습니다.']
         succesed = False
@@ -48,13 +55,11 @@ class Scraper:
             result = ['관련검색어가 없습니다.']
         print(f'{keyword} Timeout')
 
-    except WebDriverException:        
+    except WebDriverException:
+        traceback.print_exc()
         print("WebDriverException")
-        if self.retry < 2:
-            return self.scrape_google(keyword=keyword, delay=delay)
-        else:
-            result = ['관련검색어가 없습니다.']
-            self.retry()
+        result = ['관련검색어가 없습니다.']
+        self.retry()
 
     except Exception as e:
         print(f'예상치 못한 오류가 발생했습니다. 오류코드 : {sys.exc_info.__name__}')
@@ -66,18 +71,18 @@ class Scraper:
             'keyword':keyword,
             'result':result
         }
+        self.driver.quit()
         return json_result, succesed
     
-def retry(self):
+  def scroll_down(self, driver:webdriver.Chrome):
+    driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+  def retry(self):
     self.driver = self.driver_manager.restart_driver(self.driver)
     self.retry = 0
 
 if __name__ == '__main__':
     # Test your scraper here
-    driver_manager = DriverManager()
-    driver = driver_manager.driver
-    scraper = Scraper(driver, driver_manager)
+    scraper = Scraper()
     result, succesed = scraper.scrape_google('남자 패딩 사이즈')
     print(result)
-    driver_manager.quit_driver(driver)
 
