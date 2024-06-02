@@ -35,8 +35,6 @@ RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.d
 
 COPY . .
 
-WORKDIR /app
-
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 

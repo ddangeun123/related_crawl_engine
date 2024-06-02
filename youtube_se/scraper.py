@@ -78,6 +78,7 @@ class Scraper:
                 try:
                     result = self.get_video_detail(url)
                     results.append(result)
+                    limit -= 1
                 except TimeoutException:
                     print(url, 'TimeoutException')
                     self.driver.refresh()
