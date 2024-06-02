@@ -27,7 +27,7 @@ class Scraper:
         driver.get(f'https://www.youtube.com/results?search_query={query}')
         thumbnails = []
         urls = []
-        while len(urls) > (limit * 1.3):
+        while len(urls) < (limit * 1.3):
             try:
                 self.scroll_down(driver)
                 wait = WebDriverWait(driver, 10)
