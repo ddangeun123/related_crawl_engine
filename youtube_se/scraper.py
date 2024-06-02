@@ -27,7 +27,7 @@ class Scraper:
         driver.get(f'https://www.youtube.com/results?search_query={query}')
         thumbnails = []
         urls = []
-        while len(urls) < (limit * 1.3):
+        while len(urls) > (limit * 1.3):
             try:
                 self.scroll_down(driver)
                 wait = WebDriverWait(driver, 10)
@@ -56,6 +56,7 @@ class Scraper:
                     self.driver.refresh()
                     try:
                         result = self.get_shorts_detail(url)
+                        limit -= 1
                     except:
                         result = {
                             "VideoID"        : url.split('shorts/')[1],
@@ -84,6 +85,7 @@ class Scraper:
                     self.driver.refresh()
                     try:
                         result = self.get_video_detail(url)
+                        limit -= 1
                     except:
                         result = {
                             "VideoID"        : url.split('v=')[1],
