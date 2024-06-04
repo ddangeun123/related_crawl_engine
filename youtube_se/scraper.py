@@ -56,6 +56,7 @@ class Scraper:
                     self.driver.refresh()
                     try:
                         result = self.get_shorts_detail(url)
+                        limit -= 1
                     except:
                         result = {
                             "VideoID"        : url.split('shorts/')[1],
@@ -79,11 +80,13 @@ class Scraper:
                 try:
                     result = self.get_video_detail(url)
                     results.append(result)
+                    limit -= 1
                 except TimeoutException:
                     print(url, 'TimeoutException')
                     self.driver.refresh()
                     try:
                         result = self.get_video_detail(url)
+                        limit -= 1
                     except:
                         result = {
                             "VideoID"        : url.split('v=')[1],

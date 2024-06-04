@@ -65,7 +65,7 @@ async def log_requests(request, call_next):
 def youtube_task(keywords: str, limit: int = 100):
     try:
         scraper = Scraper()
-        result = scraper.scrape_youtube(keywords)
+        result = scraper.scrape_youtube(keywords, limit)
         return result
     except Exception as e:
         traceback.print_exc()
