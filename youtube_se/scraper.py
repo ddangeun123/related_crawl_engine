@@ -60,6 +60,7 @@ class Scraper:
                         result = {
                             "VideoID"        : url.split('shorts/')[1],
                             "title"          : '',
+                            "type"           : "shorts",
                             "description"    : '',
                             "viewCount"      : '',
                             "author"         : '',
@@ -87,6 +88,7 @@ class Scraper:
                         result = {
                             "VideoID"        : url.split('v=')[1],
                             "title"          : '',
+                            "type"           : "video",
                             "description"    : '',
                             "viewCount"      : '',
                             "author"         : '',
@@ -127,11 +129,13 @@ class Scraper:
         
         result = {
                     "VideoID"        : videoid,
+                    "type"           : "video",
                     "title"          : title,
                     "description"    : description,
                     "viewCount"      : view_count,
                     "author"         : author,
                     "publishDate"    : publish_date,
+                    "Error"          : "None"
                     # "comments":{
                     #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
                     #     "comments":comments
@@ -160,10 +164,12 @@ class Scraper:
         result = {
                     "VideoID"        : videoid,
                     "title"          : title,
+                    "type"           : "shorts",
                     "description"    : description,
                     "viewCount"      : view_count,
                     "author"         : author,
                     "publishDate"    : publish_date,
+                    "Error"          : "None"
                     # "comments":{
                     #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
                     #     "comments":comments
