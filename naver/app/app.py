@@ -97,12 +97,15 @@ async def search_naver(keywords: str):
         raise HTTPException(status_code=500, detail=str(e))
     
 def naver_shopping_task(keywords: str):
+    result = {
+        'keyword': keywords,
+        'result': '검색 결과가 없습니다.'
+    }
     try:
         scraper = Scraper()
         get_enable_pid(scraper.driver)
         # result = scraper.scrape_navershopping(keywords)
         result = scraper.scrape_naver_shop_keyword(keywords)
-        return result
     except Exception as e:
         traceback.print_exc()
         print(f'naver_shopping_task error: {e}')
@@ -111,6 +114,7 @@ def naver_shopping_task(keywords: str):
         #     scraper.driver.quit()
         remove_enable_pid(scraper.driver)
         chrome_manage(cur_os)
+        return result
 
 @app.get("/search/navershopping")
 async def search_naver_shopping(keywords: str):
