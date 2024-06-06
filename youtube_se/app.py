@@ -62,10 +62,10 @@ async def log_requests(request, call_next):
     
     return response
 
-def youtube_task(keywords: str, limit: int = 100):
+def youtube_task(keyword: str, limit: int = 100):
     try:
         scraper = Scraper()
-        result = scraper.scrape_youtube(keywords, limit)
+        result = scraper.scrape_youtube(keyword, limit)
         return result
     except Exception as e:
         traceback.print_exc()
@@ -74,15 +74,15 @@ def youtube_task(keywords: str, limit: int = 100):
         scraper.driver.quit()
 
 @app.get("/search/youtube")
-async def search_youtube(keyword: str, limit : int = 100):
+async def search_youtube(keywords: str, limit : int = 100):
     logger = logging.getLogger('uvicorn')
     result = {
-        'keyword': keyword,
+        'keyword': keywords,
         'result': '검색 결과가 없습니다.'
     }
     try:
         loop = asyncio.get_event_loop()
-        keyword = unquote(keyword, encoding='utf-8')
+        keyword = unquote(keywords, encoding='utf-8')
         result = await loop.run_in_executor(executor, youtube_task, keyword, limit)
     except RequestException:
         asyncio.sleep(3)
