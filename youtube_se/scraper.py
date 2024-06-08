@@ -7,6 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium_driver import SeleniumDriver
+import pytz
 import time
 import datetime
 import traceback
@@ -176,33 +177,30 @@ class Scraper:
             except:
                 view_count = 0
             try:
-                factoids = items.find(id='factoids').find_all(class_='YtwFactoidRendererHost')
+                factoids = items.find(id='factoids').find_all('factoid-renderer')
                 for factoid in factoids:
                     text = factoid.text
                     if '년' in text and '월' in text and '일' in text:
                         date_text = text
                         break
-                numbers = list(map(int, re.findall(r'\d+', date_text)))
+                # Extract the numbers
+                numbers = re.findall(r'\d+', date_text)
 
-                if '년' in date_text:
-                    year_index = date_text.index('년')
-                else:
-                    year_index = -1
-                if '월' in date_text:
-                    month_index = date_text.index('월')
-                else:
-                    month_index = -1
-                if '일' in date_text:
-                    day_index = date_text.index('일')
-                else:
-                    day_index = -1
-                
-                # Sort the numbers based on the order of year, month, and day
-                date_elements = sorted([(year_index, numbers[0]), (month_index, numbers[1]), (day_index, numbers[2])])
+                # Extract the year, month, and day and their positions
+                elements = [('년', text.index('년')), ('월', text.index('월')), ('일', text.index('일'))]
+
+                # Sort the elements based on their positions
+                elements.sort(key=lambda x: x[1])
+
+                # Map the elements to the numbers
+                date_elements = {elements[i][0]: int(numbers[i]) for i in range(3)}
 
                 # Create a datetime object
-                publish_date = datetime(date_elements[0][1], date_elements[1][1], date_elements[2][1])
-            except:
+                publish_date = datetime.datetime(date_elements['년'], date_elements['월'], date_elements['일']).isoformat()
+
+                print(publish_date)
+            except Exception as e:
+                traceback.print_exc()
                 publish_date = -1
             author = soup.find(id='channel-name').find(id='text-container').text
 
