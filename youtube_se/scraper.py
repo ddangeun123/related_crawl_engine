@@ -120,7 +120,7 @@ class Scraper:
 
         micro_format = soup.find(id='microformat')
         script_ele = micro_format.find('script', {'type':'application/ld+json'})
-        json_text = script_ele.string
+        json_text = script_ele.text
         json_data = json.loads(json_text)
         description = json_data.get("description", "No description found")
         view_count = json_data.get("interactionCount", "No view count found")
@@ -148,38 +148,104 @@ class Scraper:
         return result
     
     def get_shorts_detail(self, url:str):
+        # 변수 초기화
+        videoid = ''
+        title = ''
         description = ''
+        view_count = 0
+        author = ''
+        publish_date = ''
         driver = self.driver
         driver.get(url)
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.ID, 'menu-button')))
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        
-        video_obj = soup.find(id='watch7-content')
-        videoid = video_obj.find('meta', {'itemprop':'identifier'})['content']
-        title = video_obj.find('meta', {'itemprop':'name'})['content']
-        description = video_obj.find('meta', {'itemprop':'description'})['content']
-        author = video_obj.find('span', {'itemprop':'author'}).find('link', {'itemprop':'name'})['content']
-        view_count = video_obj.find('meta', {'itemprop':'interactionCount'})['content']
-        publish_date = video_obj.find('meta', {'itemprop':'uploadDate'})['content']
+        videoid = driver.current_url.split('shorts/')[1]
+        try:
+            panel = soup.find(class_='short-video-container')
+            items = panel.find(id='items')
+            title = items.find(id='title').text
+            try:
+                description = items.find(id='description').text
+            except:
+                description = ''
+            try:
+                factoid_value = items.find('view-count-factoid-renderer').find(class_='YtwFactoidRendererValue').text
+                view_count = int(factoid_value.replace(',', ''))
+            except:
+                view_count = 0
+            try:
+                factoids = items.find(id='factoids').find_all(class_='YtwFactoidRendererHost')
+                for factoid in factoids:
+                    text = factoid.text
+                    if '년' in text and '월' in text and '일' in text:
+                        date_text = text
+                        break
+                numbers = list(map(int, re.findall(r'\d+', date_text)))
 
-        result = {
-                    "VideoID"        : videoid,
-                    "title"          : title,
-                    "type"           : "shorts",
-                    "description"    : description,
-                    "viewCount"      : view_count,
-                    "author"         : author,
-                    "publishDate"    : publish_date,
-                    "Error"          : "None"
-                    # "comments":{
-                    #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
-                    #     "comments":comments
-                    # }
-                }
-        print(result)
-        return result
+                if '년' in date_text:
+                    year_index = date_text.index('년')
+                else:
+                    year_index = -1
+                if '월' in date_text:
+                    month_index = date_text.index('월')
+                else:
+                    month_index = -1
+                if '일' in date_text:
+                    day_index = date_text.index('일')
+                else:
+                    day_index = -1
+                
+                # Sort the numbers based on the order of year, month, and day
+                date_elements = sorted([(year_index, numbers[0]), (month_index, numbers[1]), (day_index, numbers[2])])
+
+                # Create a datetime object
+                publish_date = datetime(date_elements[0][1], date_elements[1][1], date_elements[2][1])
+            except:
+                publish_date = -1
+            author = soup.find(id='channel-name').find(id='text-container').text
+
+            # video_obj = soup.find(id='watch7-content')
+            # videoid = video_obj.find('meta', {'itemprop':'identifier'})['content']
+            # title = video_obj.find('meta', {'itemprop':'name'})['content']
+            # description = video_obj.find('meta', {'itemprop':'description'})['content']
+            # author = video_obj.find('span', {'itemprop':'author'}).find('link', {'itemprop':'name'})['content']
+            # view_count = video_obj.find('meta', {'itemprop':'interactionCount'})['content']
+            # publish_date = video_obj.find('meta', {'itemprop':'uploadDate'})['content']
+
+            result = {
+                        "VideoID"        : videoid,
+                        "title"          : title,
+                        "type"           : "shorts",
+                        "description"    : description,
+                        "viewCount"      : view_count,
+                        "author"         : author,
+                        "publishDate"    : publish_date,
+                        "Error"          : "None"
+                        # "comments":{
+                        #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                        #     "comments":comments
+                        # }
+                    }
+            print(result)
+            return result
+        except Exception as e:
+            result = {
+                        "VideoID"        : videoid,
+                        "title"          : title,
+                        "type"           : "shorts",
+                        "description"    : description,
+                        "viewCount"      : view_count,
+                        "author"         : author,
+                        "publishDate"    : publish_date,
+                        "Error"          : e
+                        # "comments":{
+                        #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                        #     "comments":comments
+                        # }
+                    }
+            return result
 
     def scroll_down(self, driver:Chrome):
         self.scroll_position += 700
