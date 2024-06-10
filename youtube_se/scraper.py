@@ -117,9 +117,13 @@ class Scraper:
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
         
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        for _ in range(3):
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            micro_format = soup.find(id='microformat')
+            
+            if micro_format is not None:
+                break
 
-        micro_format = soup.find(id='microformat')
         script_ele = micro_format.find('script', {'type':'application/ld+json'})
         json_text = script_ele.text
         json_data = json.loads(json_text)
