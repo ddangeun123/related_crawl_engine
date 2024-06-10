@@ -123,12 +123,13 @@ class Scraper:
             
             if micro_format is not None:
                 break
-        if micro_format is None:
-            with open(f'{url}.txt', 'w') as f:
-                f.write(driver.page_source)
-            raise Exception('microformat not found')
+        
 
         script_ele = micro_format.find('script', {'type':'application/ld+json'})
+        if script_ele is None:
+            with open(f'{url}.txt', 'w') as f:
+                f.write(driver.page_source)
+            raise Exception('script_ele not found')
         json_text = script_ele.text
         json_data = json.loads(json_text)
         description = json_data.get("description", "No description found")
