@@ -117,30 +117,19 @@ class Scraper:
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        micro_format = soup.select_one('#microformat')
         
         try:
-            script_ele = micro_format.find('script', {'type':'application/ld+json'})
-            json_text = script_ele.text
-            json_data = json.loads(json_text)
-            description = json_data.get("description", "No description found")
-            view_count = json_data.get("interactionCount", "No view count found")
-            title = json_data.get("name", "No title found")
-            publish_date = json_data.get("uploadDate", "No publish date found")
-            author = json_data.get("author", "No author found")
-
             videoid = driver.current_url.split('v=')[1]
-        except TypeError:
-            if script_ele is None:
-                videoid = driver.current_url.split('v=')[1]
-                title = soup.find(class_='ytp-title').text
-                description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
-                info = soup.find(id='info-conatiner').find_all('span')
-                view_count = info[0].text
-                publish_date = info[2].text
-                author = soup.find(id='upload-info').find(id='text-container').text
-                # with open(f'{videoid}.txt', 'w') as f:
-                #     f.write(driver.page_source)
+            title = soup.find(class_='ytp-title').text
+            description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
+            info = soup.find(id='info-conatiner').find_all('span')
+            view_count = info[0].text
+            publish_date = info[2].text
+            author = soup.find(id='upload-info').find(id='text-container').text
+            # with open(f'{videoid}.txt', 'w') as f:
+            #     f.write(driver.page_source)
+        except:
+            traceback.print_exc()
         finally:
             result = {
                         "VideoID"        : videoid,
