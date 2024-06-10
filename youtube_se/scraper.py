@@ -117,6 +117,7 @@ class Scraper:
             driver.get(url)
             wait = WebDriverWait(driver, 10)
             wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
+            time.sleep(1)
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             micro_format = soup.find(id='microformat')
             
