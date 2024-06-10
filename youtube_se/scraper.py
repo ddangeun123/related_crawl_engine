@@ -113,50 +113,51 @@ class Scraper:
     
     def get_video_detail(self, url:str):
         driver = self.driver
-        for _ in range(3):
-            driver.get(url)
-            wait = WebDriverWait(driver, 10)
-            wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
-            time.sleep(1)
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            micro_format = soup.select_one('#microformat')
-            
-            if micro_format is not None:
-                break
+        driver.get(url)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        micro_format = soup.select_one('#microformat')
         
+        try:
+            script_ele = micro_format.find('script', {'type':'application/ld+json'})
+            json_text = script_ele.text
+            json_data = json.loads(json_text)
+            description = json_data.get("description", "No description found")
+            view_count = json_data.get("interactionCount", "No view count found")
+            title = json_data.get("name", "No title found")
+            publish_date = json_data.get("uploadDate", "No publish date found")
+            author = json_data.get("author", "No author found")
 
-        script_ele = micro_format.find('script', {'type':'application/ld+json'})
-        if script_ele is None:
             videoid = driver.current_url.split('v=')[1]
-            with open(f'{videoid}.txt', 'w') as f:
-                f.write(driver.page_source)
-            raise Exception('script_ele not found')
-        json_text = script_ele.text
-        json_data = json.loads(json_text)
-        description = json_data.get("description", "No description found")
-        view_count = json_data.get("interactionCount", "No view count found")
-        title = json_data.get("name", "No title found")
-        publish_date = json_data.get("uploadDate", "No publish date found")
-        author = json_data.get("author", "No author found")
-
-        videoid = driver.current_url.split('v=')[1]
-        
-        result = {
-                    "VideoID"        : videoid,
-                    "type"           : "video",
-                    "title"          : title,
-                    "description"    : description,
-                    "viewCount"      : view_count,
-                    "author"         : author,
-                    "publishDate"    : publish_date,
-                    "Error"          : "None"
-                    # "comments":{
-                    #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
-                    #     "comments":comments
-                    # }
-                }
-        print(result)
-        return result
+        except TypeError:
+            if script_ele is None:
+                videoid = driver.current_url.split('v=')[1]
+                title = soup.find(class_='ytp-title').text
+                description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
+                info = soup.find(id='info-conatiner').find_all('span')
+                view_count = info[0].text
+                publish_date = info[2].text
+                author = soup.find(id='upload-info').find(id='text-container').text
+                # with open(f'{videoid}.txt', 'w') as f:
+                #     f.write(driver.page_source)
+        finally:
+            result = {
+                        "VideoID"        : videoid,
+                        "type"           : "video",
+                        "title"          : title,
+                        "description"    : description,
+                        "viewCount"      : view_count,
+                        "author"         : author,
+                        "publishDate"    : publish_date,
+                        "Error"          : "None"
+                        # "comments":{
+                        #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
+                        #     "comments":comments
+                        # }
+                    }
+            print(result)
+            return result
     
     def get_shorts_detail(self, url:str):
         # 변수 초기화
@@ -208,7 +209,6 @@ class Scraper:
                 # Create a datetime object
                 publish_date = datetime.datetime(date_elements['년'], date_elements['월'], date_elements['일']).isoformat()
 
-                print(publish_date)
             except Exception as e:
                 traceback.print_exc()
                 publish_date = -1
