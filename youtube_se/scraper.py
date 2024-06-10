@@ -113,11 +113,10 @@ class Scraper:
     
     def get_video_detail(self, url:str):
         driver = self.driver
-        driver.get(url)
-        wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
-        
         for _ in range(3):
+            driver.get(url)
+            wait = WebDriverWait(driver, 10)
+            wait.until(EC.presence_of_element_located((By.ID, 'microformat')))
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             micro_format = soup.find(id='microformat')
             
