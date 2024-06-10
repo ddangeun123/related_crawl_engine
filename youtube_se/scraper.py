@@ -127,7 +127,8 @@ class Scraper:
 
         script_ele = micro_format.find('script', {'type':'application/ld+json'})
         if script_ele is None:
-            with open(f'{url}.txt', 'w') as f:
+            videoid = driver.current_url.split('v=')[1]
+            with open(f'{videoid}.txt', 'w') as f:
                 f.write(driver.page_source)
             raise Exception('script_ele not found')
         json_text = script_ele.text
