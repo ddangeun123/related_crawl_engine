@@ -113,7 +113,7 @@ class Scraper:
         return results
     
     def get_video_detail(self, url:str):
-        videoid = driver.current_url.split('v=')[1]
+        videoid = url.split('v=')[1]
         title = ''
         description = ''
         view_count = 0
@@ -135,7 +135,7 @@ class Scraper:
             
         except:
             traceback.print_exc()
-
+            print('현재 운영체제 : ' + platform.system())
             if platform.system() == 'Linux':
                 with open(f'./Git/related_crawl_engine/youtube_se/pagesources/{videoid}.txt', 'w') as f:
                     f.write(driver.page_source)
