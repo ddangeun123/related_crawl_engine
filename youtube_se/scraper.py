@@ -7,6 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium_driver import SeleniumDriver
+import platform
 import pytz
 import time
 import datetime
@@ -112,6 +113,12 @@ class Scraper:
         return results
     
     def get_video_detail(self, url:str):
+        videoid = driver.current_url.split('v=')[1]
+        title = ''
+        description = ''
+        view_count = 0
+        author = ''
+        publish_date = ''
         driver = self.driver
         driver.get(url)
         wait = WebDriverWait(driver, 10)
@@ -119,17 +126,20 @@ class Scraper:
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         
         try:
-            videoid = driver.current_url.split('v=')[1]
             title = soup.find(class_='ytp-title').text
             description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
             info = soup.find(id='info-conatiner').find_all('span')
             view_count = info[0].text
             publish_date = info[2].text
             author = soup.find(id='upload-info').find(id='text-container').text
-            # with open(f'{videoid}.txt', 'w') as f:
-            #     f.write(driver.page_source)
+            
         except:
             traceback.print_exc()
+
+            if platform.system() == 'Linux':
+                with open(f'./Git/related_crawl_engine/youtube_se/pagesources/{videoid}.txt', 'w') as f:
+                    f.write(driver.page_source)
+
         finally:
             result = {
                         "VideoID"        : videoid,
