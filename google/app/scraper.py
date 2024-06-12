@@ -41,7 +41,6 @@ class Scraper:
                 temp_ele = parent.find_elements(By.CSS_SELECTOR, ':scope > div')
                 elements.extend(temp_ele)
             if len(elements) != 0:
-                result = []
                 for element in elements:
                     result.append(element.text)
                 succesed = True
