@@ -131,7 +131,7 @@ class Scraper:
             view_count = soup.find('view-count-factoid-renderer').find(class_='YtwFactoidRendererValue').text
             author = soup.find(id='upload-info').find(id='text-container').text
             date_str = soup.find(id='info-strings').text
-            date_obj = datetime.datetime.strptime(date_str, '%Y.%m.%d.')
+            date_obj = datetime.datetime.strptime(date_str, '%Y. %m. %d.')
             publish_date = date_obj.isoformat()
             
         except:
