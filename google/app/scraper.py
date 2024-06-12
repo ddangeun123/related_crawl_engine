@@ -80,6 +80,7 @@ class Scraper:
             'result':result
         }
         self.driver.quit()
+        print(json_result)
         return json_result, succesed
     
   def scroll_down(self, driver:webdriver.Chrome):
