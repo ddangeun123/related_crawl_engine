@@ -29,14 +29,22 @@ class Scraper:
         bot = wait.until(EC.presence_of_element_located((By.ID, 'botstuff')))
         parents = self.driver.find_elements(By.CLASS_NAME, 'AJLUJb')
         elements = []
-        for parent in parents:
-            temp_ele = parent.find_elements(By.CSS_SELECTOR, ':scope > div')
-            elements.extend(temp_ele)
-        if len(elements) != 0:
-            result = []
+        try:
+            elements = bot.find_elements(By.CLASS_NAME, 'b2Rnsc')
             for element in elements:
                 result.append(element.text)
             succesed = True
+        except:
+            pass
+        if len(elements) == 0:
+            for parent in parents:
+                temp_ele = parent.find_elements(By.CSS_SELECTOR, ':scope > div')
+                elements.extend(temp_ele)
+            if len(elements) != 0:
+                result = []
+                for element in elements:
+                    result.append(element.text)
+                succesed = True
 
     except NoSuchElementException:
         result = ['관련검색어가 없습니다.']
