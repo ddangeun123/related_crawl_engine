@@ -128,17 +128,16 @@ class Scraper:
         try:
             title = soup.find(class_='ytp-title').text
             description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
-            info = soup.find(id='info-conatiner').find_all('span')
-            view_count = info[0].text
-            publish_date = info[2].text
+            # info = soup.find(id='info-conatiner').find_all('span')
+            # view_count = info[0].text
+            # publish_date = info[2].text
+            view_count = soup.find('view-count-factoid-renderer').find(class_='YtwFactoidRendererValue').text
             author = soup.find(id='upload-info').find(id='text-container').text
             
         except:
             traceback.print_exc()
-            print('현재 운영체제 : ' + platform.system())
-            if platform.system() == 'Linux':
-                with open(f'/root/Git/related_crawl_engine/youtube_se/pagesources/{videoid}.txt', 'w') as f:
-                    f.write(driver.page_source)
+            with open(f'/root/Git/related_crawl_engine/youtube_se/pagesources/{videoid}.txt', 'w') as f:
+                f.write(driver.page_source)
 
         finally:
             result = {
