@@ -27,7 +27,7 @@ class Scraper:
     result = []
     try:
         self.scroll_down(self.driver)
-        parents = self.driver.find_elements(By.CLASS_NAME, 'AJLUJb')
+        parents = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'AJLUJb')))
         elements = []
         try:
             elements = self.driver.find_elements(By.CLASS_NAME, 'b2Rnsc')
