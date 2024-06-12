@@ -137,7 +137,7 @@ class Scraper:
             traceback.print_exc()
             print('현재 운영체제 : ' + platform.system())
             if platform.system() == 'Linux':
-                with open(f'./Git/related_crawl_engine/youtube_se/pagesources/{videoid}.txt', 'w') as f:
+                with open(f'/root/Git/related_crawl_engine/youtube_se/pagesources/{videoid}.txt', 'w') as f:
                     f.write(driver.page_source)
 
         finally:
