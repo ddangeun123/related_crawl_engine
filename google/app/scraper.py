@@ -24,13 +24,13 @@ class Scraper:
     self.driver.get(url)
     succesed = False
     wait = WebDriverWait(self.driver, 10)
+    result = []
     try:
         self.scroll_down(self.driver)
-        bot = wait.until(EC.presence_of_element_located((By.ID, 'botstuff')))
         parents = self.driver.find_elements(By.CLASS_NAME, 'AJLUJb')
         elements = []
         try:
-            elements = bot.find_elements(By.CLASS_NAME, 'b2Rnsc')
+            elements = self.driver.find_elements(By.CLASS_NAME, 'b2Rnsc')
             for element in elements:
                 result.append(element.text)
             succesed = True
@@ -91,6 +91,6 @@ class Scraper:
 if __name__ == '__main__':
     # Test your scraper here
     scraper = Scraper()
-    result, succesed = scraper.scrape_google('남자 패딩 사이즈')
+    result, succesed = scraper.scrape_google('바시티 자켓 바지')
     print(result)
 
