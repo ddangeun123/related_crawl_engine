@@ -130,7 +130,9 @@ class Scraper:
             description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
             view_count = soup.find('view-count-factoid-renderer').find(class_='YtwFactoidRendererValue').text
             author = soup.find(id='upload-info').find(id='text-container').text
-            publish_date = soup.find(id='info-strings').text
+            date_str = soup.find(id='info-strings').text
+            date_obj = datetime.strptime(date_str, '%Y.%m.%d.')
+            publish_date = date_obj.isoformat()
             
         except:
             traceback.print_exc()
