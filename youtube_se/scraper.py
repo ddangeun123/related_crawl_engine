@@ -58,6 +58,8 @@ class Scraper:
                 traceback.print_exc()
             finally:
                 results.append(result)
+                if len(urls) < limit:
+                    break
             
         return results
 

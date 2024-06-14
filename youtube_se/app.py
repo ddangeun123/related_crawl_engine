@@ -63,7 +63,6 @@ async def log_requests(request, call_next):
     return response
 
 
-    
 def list_task(keyword: str, limit: int = 100):
     result = {
         'keyword' : keyword,
