@@ -62,6 +62,129 @@ async def log_requests(request, call_next):
     
     return response
 
+
+    
+def list_task(keyword: str, limit: int = 100):
+    result = {
+        'keyword' : keyword,
+        'result'  : []
+    }
+    try:
+        scraper = Scraper()
+        result = scraper.get_list(keyword, limit)
+        result = {
+            'keyword': keyword,
+            'result': result
+        }
+    except Exception as e:
+        traceback.print_exc()
+    finally:
+        return result
+@app.get("/search/list")
+async def search_list(keywords: str, limit: int = 100):
+    logger = logging.getLogger('uvicorn')
+    result = {
+        'keyword' : keywords,
+        'result'  : []
+    }
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(executor, list_task, keywords, limit)
+        logger.info(f"List result: {result}")
+    except Exception as e:
+        logger.error(f"Error: {e} keyword : {keywords} at traceback: {traceback.print_exc()}")
+        traceback.print_exc()
+    finally:
+        return result
+def video_task(videoid: str):
+    logger = logging.getLogger('uvicorn')
+    video_url = f"https://www.youtube.com/watch?v={videoid}"
+    try:
+        scraper = Scraper()
+        result = scraper.get_video_detail(video_url)
+        logger.info(f"Video result: {result}")
+    except Exception as e:
+        logger.error(f"Error: {e} videoid : {videoid} at traceback: {traceback.print_exc()}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        scraper.driver.quit()
+        return result
+@app.get("/search/video")
+async def search_video(videoid: str):
+    logger = logging.getLogger('uvicorn')
+    result = {
+        'videoid': videoid,
+        'result': '검색 결과가 없습니다.'
+    }
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(executor, video_task, videoid)
+    except Exception as e:
+        logger.error(f"Error: {e} videoid : {videoid} at traceback: {traceback.print_exc()}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        return result
+
+def shorts_task(videoid: str):
+    logger = logging.getLogger('uvicorn')
+    shorts_url = f"https://www.youtube.com/shorts/{videoid}"
+    try:
+        scraper = Scraper()
+        result = scraper.get_shorts_detail(shorts_url)
+        logger.info(f"Shorts result: {result}")
+    except Exception as e:
+        logger.error(f"Error: {e} videoid : {videoid} at traceback: {traceback.print_exc()}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        scraper.driver.quit()
+        return result
+@app.get("/search/shorts")
+async def search_shorts(videoid: str):
+    logger = logging.getLogger('uvicorn')
+    result = {
+        'videoid': videoid,
+        'result': '검색 결과가 없습니다.'
+    }
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(executor, shorts_task, videoid)
+    except Exception as e:
+        logger.error(f"Error: {e} videoid : {videoid} at traceback: {traceback.print_exc()}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        return result
+
+    
+def chrome_manage(os:str):
+    if os == 'Windows':
+        list_command = 'tasklist /FI "IMAGENAME eq chrome.exe"'
+        process = subprocess.Popen(["powershell", list_command], stdout=subprocess.PIPE)
+        output = process.communicate()[0].decode('utf-8')
+        lines = output.strip().split('\n')
+
+        current_pids = [line.split()[1] for line in lines[3:]]
+
+        kill_pids = [pid for pid in current_pids if int(pid) not in enable_chromes]
+
+        for pid in kill_pids:
+            subprocess.call('taskkill /F /PID {}'.format(pid), shell=True)
+    elif os == 'Linux' or os == 'Mac':
+        list_command = 'pgrep -f "chrome"'
+        process = subprocess.Popen(list_command, shell=True, stdout=subprocess.PIPE)
+        output = process.communicate()[0].decode('utf-8')
+        current_pids = output.strip().split('\n')
+
+        kill_pids = [pid for pid in current_pids if int(pid) not in enable_chromes]
+
+        for pid in kill_pids:
+            subprocess.call('pkill -TERM -P {}'.format(pid), shell=True)
+
+# -----------------------not---used------------------------------
+
 def youtube_task(keyword: str, limit: int = 100):
     try:
         scraper = Scraper()
@@ -92,27 +215,3 @@ async def search_youtube(keywords: str, limit : int = 100):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         return result
-    
-def chrome_manage(os:str):
-    if os == 'Windows':
-        list_command = 'tasklist /FI "IMAGENAME eq chrome.exe"'
-        process = subprocess.Popen(["powershell", list_command], stdout=subprocess.PIPE)
-        output = process.communicate()[0].decode('utf-8')
-        lines = output.strip().split('\n')
-
-        current_pids = [line.split()[1] for line in lines[3:]]
-
-        kill_pids = [pid for pid in current_pids if int(pid) not in enable_chromes]
-
-        for pid in kill_pids:
-            subprocess.call('taskkill /F /PID {}'.format(pid), shell=True)
-    elif os == 'Linux' or os == 'Mac':
-        list_command = 'pgrep -f "chrome"'
-        process = subprocess.Popen(list_command, shell=True, stdout=subprocess.PIPE)
-        output = process.communicate()[0].decode('utf-8')
-        current_pids = output.strip().split('\n')
-
-        kill_pids = [pid for pid in current_pids if int(pid) not in enable_chromes]
-
-        for pid in kill_pids:
-            subprocess.call('pkill -TERM -P {}'.format(pid), shell=True)
