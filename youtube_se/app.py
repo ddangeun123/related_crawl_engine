@@ -185,33 +185,33 @@ def chrome_manage(os:str):
 
 # -----------------------not---used------------------------------
 
-def youtube_task(keyword: str, limit: int = 100):
-    try:
-        scraper = Scraper()
-        result = scraper.scrape_youtube(keyword, limit)
-        return result
-    except Exception as e:
-        traceback.print_exc()
-        print(f'youtube_task error: {e}')
-    finally:
-        scraper.driver.quit()
+# def youtube_task(keyword: str, limit: int = 100):
+#     try:
+#         scraper = Scraper()
+#         result = scraper.scrape_youtube(keyword, limit)
+#         return result
+#     except Exception as e:
+#         traceback.print_exc()
+#         print(f'youtube_task error: {e}')
+#     finally:
+#         scraper.driver.quit()
 
-@app.get("/search/youtube")
-async def search_youtube(keywords: str, limit : int = 100):
-    logger = logging.getLogger('uvicorn')
-    result = {
-        'keyword': keywords,
-        'result': '검색 결과가 없습니다.'
-    }
-    try:
-        loop = asyncio.get_event_loop()
-        keyword = unquote(keywords, encoding='utf-8')
-        result = await loop.run_in_executor(executor, youtube_task, keyword, limit)
-    except RequestException:
-        asyncio.sleep(3)
-        result = await loop.run_in_executor(executor, youtube_task, keyword, limit)
-    except Exception as e:
-        logger.error(f"Error: {e} keyword : {keyword} at traceback: {traceback.print_exc()}")
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        return result
+# @app.get("/search/youtube")
+# async def search_youtube(keywords: str, limit : int = 100):
+#     logger = logging.getLogger('uvicorn')
+#     result = {
+#         'keyword': keywords,
+#         'result': '검색 결과가 없습니다.'
+#     }
+#     try:
+#         loop = asyncio.get_event_loop()
+#         keyword = unquote(keywords, encoding='utf-8')
+#         result = await loop.run_in_executor(executor, youtube_task, keyword, limit)
+#     except RequestException:
+#         asyncio.sleep(3)
+#         result = await loop.run_in_executor(executor, youtube_task, keyword, limit)
+#     except Exception as e:
+#         logger.error(f"Error: {e} keyword : {keyword} at traceback: {traceback.print_exc()}")
+#         raise HTTPException(status_code=500, detail=str(e))
+#     finally:
+#         return result
