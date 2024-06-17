@@ -15,6 +15,7 @@ import traceback
 from bs4 import BeautifulSoup
 import json
 import re
+import logging
 
 class Scraper:
     def __init__(self):
@@ -35,32 +36,59 @@ class Scraper:
                 self.scroll_down(driver)
                 wait = WebDriverWait(driver, 10)
                 wait.until(EC.presence_of_all_elements_located((By.ID, 'thumbnail')))
-                thumbnails = driver.find_elements(By.ID, 'thumbnail')
-                hrefs = [thumbnail.get_attribute('href') for thumbnail in thumbnails]
-                urls = [url for url in hrefs if url is not None and ('shorts' in url or 'watch' in url)]
-                urls = set(urls)
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                dismiss = soup.find_all(id='dismissable')
+                for dis in dismiss:
+                    try:
+                        url = dis.find(id='thumbnail').get_attribute('href')
+                        if 'shorts' in url:
+                            id = url.split('shorts/')[1]
+                        elif 'watch' in url:
+                            id = url.split('v=')[1]
+                        else:
+                            continue
+                        title = dis.find(id='video-title').text
+                        result = {
+                            "VideoID": id,
+                            "title": title,
+                            "url": url
+                        }
+                        results.append(result)
+                        if len(results) >= limit:
+                            break
+                    except Exception as e:
+                        logger = logging.getLogger('uvicorn')
+                        if id != None:
+                            logger.error(f"Error: {e} videoid : {id} at traceback: {traceback.print_exc()}")
+                        else:
+                            logger.error(f"Error: {e} dismiss : {dismiss}at traceback: {traceback.print_exc()}")
+                        traceback.print_exc()
+                # thumbnails = driver.find_elements(By.ID, 'thumbnail')
+                # hrefs = [thumbnail.get_attribute('href') for thumbnail in thumbnails]
+                # urls = [url for url in hrefs if url is not None and ('shorts' in url or 'watch' in url)]
+                # urls = set(urls)
             except TimeoutException:
                 print('TimeoutException')
-        for url in urls:
-            try:
-                id = ''
-                if 'shorts' in url:
-                    id = url.split('shorts/')[1]
-                elif 'watch' in url:
-                    id = url.split('v=')[1]
-                else:
-                    continue
-                result = {
-                    "VideoID": id,
-                    "url": url
-                }
-            except Exception as e:
-                traceback.print_exc()
-            finally:
-                results.append(result)
-                if len(results) >= limit:
-                    break
-            
+        # for url in urls:
+        #     try:
+        #         id = ''
+        #         if 'shorts' in url:
+        #             id = url.split('shorts/')[1]
+        #         elif 'watch' in url:
+        #             id = url.split('v=')[1]
+        #         else:
+        #             continue
+        #         result = {
+        #             "VideoID": id,
+        #             "url": url
+        #         }
+        #     except Exception as e:
+        #         traceback.print_exc()
+        #     finally:
+        #         results.append(result)
+        #         if len(results) >= limit:
+        #             break
+
         return results
 
     def scrape_youtube(self, query:str, limit:int = 100):
