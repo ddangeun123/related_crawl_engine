@@ -157,7 +157,7 @@ async def search_shorts(videoid: str):
     finally:
         return result
 
-    
+
 def chrome_manage(os:str):
     if os == 'Windows':
         list_command = 'tasklist /FI "IMAGENAME eq chrome.exe"'

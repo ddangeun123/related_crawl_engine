@@ -31,16 +31,17 @@ class Scraper:
         thumbnails = []
         urls = []
         results = []
-        while len(urls) < (limit * 1.3):
+        while len(results) < limit:
             try:
                 self.scroll_down(driver)
                 wait = WebDriverWait(driver, 10)
                 wait.until(EC.presence_of_all_elements_located((By.ID, 'thumbnail')))
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
-                dismiss = soup.find_all(id='dismissable')
+                dismiss = soup.find_all(id='dismissible')
                 for dis in dismiss:
                     try:
-                        url = dis.find(id='thumbnail').get_attribute('href')
+                        thumbnail = dis.find(id='thumbnail')
+                        url = thumbnail['href']
                         if 'shorts' in url:
                             id = url.split('shorts/')[1]
                         elif 'watch' in url:
@@ -54,8 +55,7 @@ class Scraper:
                             "url": url
                         }
                         results.append(result)
-                        if len(results) >= limit:
-                            break
+                        
                     except Exception as e:
                         logger = logging.getLogger('uvicorn')
                         if id != None:
@@ -63,6 +63,9 @@ class Scraper:
                         else:
                             logger.error(f"Error: {e} dismiss : {dismiss}at traceback: {traceback.print_exc()}")
                         traceback.print_exc()
+                    finally:
+                        if len(results) >= limit:
+                            break
                 # thumbnails = driver.find_elements(By.ID, 'thumbnail')
                 # hrefs = [thumbnail.get_attribute('href') for thumbnail in thumbnails]
                 # urls = [url for url in hrefs if url is not None and ('shorts' in url or 'watch' in url)]
