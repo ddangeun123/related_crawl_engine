@@ -26,6 +26,7 @@ class Scraper:
         pass
 
     def get_list(self, query:str, limit:int = 100):
+        default_url = 'https://www.youtube.com/'
         driver = self.driver
         driver.get(f'https://www.youtube.com/results?search_query={query}')
         thumbnails = []
@@ -41,7 +42,7 @@ class Scraper:
                 for dis in dismiss:
                     try:
                         thumbnail = dis.find(id='thumbnail')
-                        url = thumbnail['href']
+                        url = default_url+thumbnail['href']
                         if 'shorts' in url:
                             id = url.split('shorts/')[1]
                         elif 'watch' in url:
@@ -63,6 +64,7 @@ class Scraper:
                         else:
                             logger.error(f"Error: {e} dismiss : {dismiss}at traceback: {traceback.print_exc()}")
                         traceback.print_exc()
+                        continue
                     finally:
                         if len(results) >= limit:
                             break
