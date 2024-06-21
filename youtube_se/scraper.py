@@ -68,32 +68,9 @@ class Scraper:
                     finally:
                         if len(results) >= limit:
                             break
-                # thumbnails = driver.find_elements(By.ID, 'thumbnail')
-                # hrefs = [thumbnail.get_attribute('href') for thumbnail in thumbnails]
-                # urls = [url for url in hrefs if url is not None and ('shorts' in url or 'watch' in url)]
-                # urls = set(urls)
+                
             except TimeoutException:
                 print('TimeoutException')
-        # for url in urls:
-        #     try:
-        #         id = ''
-        #         if 'shorts' in url:
-        #             id = url.split('shorts/')[1]
-        #         elif 'watch' in url:
-        #             id = url.split('v=')[1]
-        #         else:
-        #             continue
-        #         result = {
-        #             "VideoID": id,
-        #             "url": url
-        #         }
-        #     except Exception as e:
-        #         traceback.print_exc()
-        #     finally:
-        #         results.append(result)
-        #         if len(results) >= limit:
-        #             break
-
         return results
 
     def scrape_youtube(self, query:str, limit:int = 100):
