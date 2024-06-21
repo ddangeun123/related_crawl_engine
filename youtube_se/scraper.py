@@ -175,10 +175,10 @@ class Scraper:
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         
         try:
-            title = soup.find(class_='ytp-title').text
-            description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
+            # title = soup.find(class_='ytp-title').text
+            # description = soup.find(class_='ytd-expandable-video-description-body-renderer').text
             view_count = soup.find('view-count-factoid-renderer').find(class_='YtwFactoidRendererValue').text
-            author = soup.find(id='upload-info').find(id='text-container').text
+            # author = soup.find(id='upload-info').find(id='text-container').text
             date_str = soup.find(id='info-strings').text
             date_obj = datetime.datetime.strptime(date_str, '%Y. %m. %d.')
             publish_date = date_obj.isoformat()
@@ -191,13 +191,13 @@ class Scraper:
         finally:
             result = {
                         "VideoID"        : videoid,
-                        "type"           : "video",
-                        "title"          : title,
-                        "description"    : description,
+                        # "type"           : "video",
+                        # "title"          : title,
+                        # "description"    : description,
                         "viewCount"      : view_count,
-                        "author"         : author,
+                        # "author"         : author,
                         "publishDate"    : publish_date,
-                        "Error"          : "None"
+                        # "Error"          : "None"
                         # "comments":{
                         #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
                         #     "comments":comments
@@ -225,10 +225,10 @@ class Scraper:
             panel = soup.find(class_='short-video-container')
             items = panel.find(id='items')
             title = items.find(id='title').text
-            try:
-                description = items.find(id='description').text
-            except:
-                description = ''
+            # try:
+            #     description = items.find(id='description').text
+            # except:
+            #     pass
             try:
                 factoid_value = items.find('view-count-factoid-renderer').find(class_='YtwFactoidRendererValue').text
                 view_count = int(factoid_value.replace(',', ''))
@@ -259,25 +259,17 @@ class Scraper:
             except Exception as e:
                 traceback.print_exc()
                 publish_date = -1
-            author = soup.find(id='channel-name').find(id='text-container').text
-
-            # video_obj = soup.find(id='watch7-content')
-            # videoid = video_obj.find('meta', {'itemprop':'identifier'})['content']
-            # title = video_obj.find('meta', {'itemprop':'name'})['content']
-            # description = video_obj.find('meta', {'itemprop':'description'})['content']
-            # author = video_obj.find('span', {'itemprop':'author'}).find('link', {'itemprop':'name'})['content']
-            # view_count = video_obj.find('meta', {'itemprop':'interactionCount'})['content']
-            # publish_date = video_obj.find('meta', {'itemprop':'uploadDate'})['content']
+            # author = soup.find(id='channel-name').find(id='text-container').text
 
             result = {
                         "VideoID"        : videoid,
-                        "title"          : title,
-                        "type"           : "shorts",
-                        "description"    : description,
+                        # "title"          : title,
+                        # "type"           : "shorts",
+                        # "description"    : description,
                         "viewCount"      : view_count,
-                        "author"         : author,
+                        # "author"         : author,
                         "publishDate"    : publish_date,
-                        "Error"          : "None"
+                        # "Error"          : "None"
                         # "comments":{
                         #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
                         #     "comments":comments
@@ -288,13 +280,13 @@ class Scraper:
         except Exception as e:
             result = {
                         "VideoID"        : videoid,
-                        "title"          : title,
-                        "type"           : "shorts",
-                        "description"    : description,
+                        # "title"          : title,
+                        # "type"           : "shorts",
+                        # "description"    : description,
                         "viewCount"      : view_count,
-                        "author"         : author,
+                        # "author"         : author,
                         "publishDate"    : publish_date,
-                        "Error"          : e
+                        # "Error"          : e
                         # "comments":{
                         #     "count":comments_res['onResponseReceivedEndpoints'][0]['reloadContinuationItemsCommand']['continuationItems'][0]['commentsHeaderRenderer']['countText']['runs'][1]['text'],
                         #     "comments":comments
