@@ -46,6 +46,71 @@ class Crawler:
             # 넣기
             "videoId": "",
         }
+    def logic_test(self):
+        # first page api 요청
+            res = self._api_search_page(keyword="떡볶이")
+
+            # api key 가져오기
+            api_key_raw_start = res.find("INNERTUBE_API_KEY")
+            api_key_raw = res[api_key_raw_start : api_key_raw_start + 130]
+            startPoint = api_key_raw.find(":")
+            endPoint = api_key_raw.find(",")
+            self.api_key = api_key_raw[startPoint + 2 : endPoint - 1]
+
+            # 설정파일 만들기.
+            startPoint = res.find("INNERTUBE_CONTEXT") + 2 + len("INNERTUBE_CONTEXT")
+            endPoint = res.find("INNERTUBE_CONTEXT_CLIENT_NAME") - 2
+            config_data_raw = res[startPoint:endPoint]
+            config_data = json.loads(config_data_raw)
+            # context에 넣기
+            self.post_json["context"] = config_data
+            self.detail_json["context"] = config_data
+            # 결과 json으로 변형
+            initial_data = res.split("ytInitialData = ")[1]
+            splited = initial_data.split(";</script>")
+            initial_data_json_raw = splited[0]
+            initial_data_json = json.loads(initial_data_json_raw)
+
+            # 다음 페이지 정보 가져오기
+            try:
+                next_page_info_contents = initial_data_json["contents"][
+                    "twoColumnSearchResultsRenderer"
+                ]["primaryContents"]["sectionListRenderer"]["contents"]
+                try:
+                    next_page_info_json = next_page_info_contents[-1][
+                        "continuationItemRenderer"
+                    ]
+                except:
+                    next_page_info_json = next_page_info_contents[2][
+                        "continuationItemRenderer"
+                    ]
+            except Exception as e:
+                print(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", e)
+                next_page_info_json = {}
+
+            # 값 넣어주기
+            is_break = False
+            try:
+                self.click_tracking_params = next_page_info_json[
+                    "continuationEndpoint"
+                ]["clickTrackingParams"]
+                self.continuation_command = next_page_info_json["continuationEndpoint"][
+                    "continuationCommand"
+                ]["token"]
+                self.post_json["continuation"] = self.continuation_command
+            except:
+                self.click_tracking_params = ""
+                self.continuation_command = ""
+                is_break = True
+
+            # 데이터 가공
+            youtube_list_json = initial_data_json["contents"][
+                "twoColumnSearchResultsRenderer"
+            ]["primaryContents"]["sectionListRenderer"]["contents"][0][
+                "itemSectionRenderer"
+            ][
+                "contents"
+            ]
 
     def get_info_by_keyword(self, keyword: str, limit: int, sleep_sec: float = 1.5):
         try:
