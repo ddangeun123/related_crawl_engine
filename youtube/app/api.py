@@ -4,6 +4,7 @@ import requests
 import traceback
 
 from bs4 import BeautifulSoup
+import logging
 
 class Scraper:
     def __init__(self):
@@ -46,6 +47,7 @@ class Scraper:
             # 넣기
             "videoId": "",
         }
+        self.logger = logging.getLogger('uvicorn')
     def _api_search_page(self, keyword: str):
             self.detail_json["playbackContext"]["contentPlaybackContext"][
                 "referer"
@@ -110,6 +112,7 @@ class Scraper:
         except Exception as e:
             print(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", e)
             traceback.print_exc()
+            self.logger.error(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", traceback.print_exc())
             next_page_info_json = {}
 
         # 값 넣어주기
@@ -157,6 +160,7 @@ class Scraper:
             except Exception as e:
                 print(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", e)
                 traceback.print_exc()
+                self.logger.error(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", traceback.print_exc())
                 continue
         return self.result
 
@@ -187,6 +191,7 @@ class Scraper:
         except Exception as e:
             print(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", e)
             traceback.print_exc()
+            self.logger.error(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", traceback.print_exc())
         finally:
             print(f"type : video \n title : {title}")
             return {
@@ -225,6 +230,7 @@ class Scraper:
         except Exception as e:
             print(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", e)
             traceback.print_exc()
+            self.logger.error(f"예기치 못한 에러 \n 에러코드 : {sys.exc_info.__name__}", traceback.print_exc())
         finally:
             print(f"type : shorts \n title : {title}")
             return {
@@ -378,6 +384,7 @@ class Scraper:
         while len(self.result) < limit:
             youtube_list = self._get_next_page()
             self.scrape_page_list(youtube_list, limit=limit)
+        self.logger.info(f"keyword: {keyword} limit: {limit} result: {len(self.result)}")
         return self.result
 
 
