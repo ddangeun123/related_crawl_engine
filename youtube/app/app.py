@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from crawler import Crawler
+from api import Scraper
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 
@@ -12,11 +13,11 @@ executor = ThreadPoolExecutor(max_workers=4)
 def youtube_task(keyword:str, limit:int):
     keyword = keyword.split(',')
     result = []
-    crawler = Crawler()
+    scraper = Scraper()
     for index, keyword in enumerate(keyword):
         data = {
             'keyword':keyword,
-            'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
+            'result':scraper.search_list(keyword=keyword, limit=limit)
         }
         # print(f'{index}   {data}')
         result.append(data)
@@ -24,9 +25,9 @@ def youtube_task(keyword:str, limit:int):
         for index, keyword in enumerate(keyword):
             data = {
                 'keyword':keyword,
-                'result':crawler.get_info_by_keyword(keyword=keyword, limit=limit, sleep_sec=0.2)
+                'result':scraper.search_list(keyword=keyword, limit=limit)
             }
-            print(f'{index}   {data}')
+            # print(f'{index}   {data}')
             result.append(data)
     return result
 
