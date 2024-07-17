@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.webdriver import ChromeOptions as Options
+from selenium.webdriver.firefox.options import Options
 
 class SeleniumDriver:
     def __init__(self):
@@ -17,7 +17,7 @@ class SeleniumDriver:
         options.add_argument('--temp-profile')
         options.add_argument('--disable-features=SearchProviderFirstRun')
         options.add_argument('--disable-geolocation')
-        self.driver = webdriver.Chrome(options=options)
+        self.driver = webdriver.Firefox(options=options)
         return self.driver
 
     def health_check(self):
