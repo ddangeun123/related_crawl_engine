@@ -32,7 +32,8 @@ def google_task(keywords: str):
     except Exception as e:
         result = scraper.scrape_google(keyword=keywords, delay=0.5)
     finally:
-        kill_browser(driver_pid)
+        if driver_pid:
+            kill_browser(driver_pid)
         return result
     
 def kill_browser(pid):

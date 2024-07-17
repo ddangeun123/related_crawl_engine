@@ -2,12 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
 from selenium.common.exceptions import WebDriverException
-
 from selenium.webdriver.common.by import By
-import chromedriver_autoinstaller
-
 
 import sys
 import time
@@ -20,7 +16,6 @@ class Crawler():
         pass
 
     def Set_Browser(self):
-        chromedriver_autoinstaller.install()
         # chromedriver_path = '../chromedriver'
         options = Options()
         options.add_argument('--headless')
